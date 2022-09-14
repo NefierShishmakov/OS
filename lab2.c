@@ -2,6 +2,8 @@
 #include <errno.h>
 #include <stdio.h>
 
+#define LINES_NUM 10
+
 typedef struct function_args {
     const char *name;
     int num;
@@ -20,8 +22,8 @@ void *print_lines(void *arg) {
 int main(void) {
     pthread_t pthread_id;
 
-    function_args parent = {"parent", 10};
-    function_args child = {"child", 10};
+    function_args parent = {"parent", LINES_NUM};
+    function_args child = {"child", LINES_NUM};
 
     int create_status = pthread_create(&pthread_id, NULL, print_lines, &child);
 

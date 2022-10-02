@@ -6,18 +6,15 @@
 #define SUCCESS 0
 #define FAILURE 1
 
-typedef struct function_args 
-{
+typedef struct function_args {
     const char *name;
     int num;
 } function_args;
 
-void *print_lines(void *arg) 
-{
+void *print_lines(void *arg) {
     function_args *args = (function_args *)arg;
 
-    for (int i = 1; i <= args->num; ++i) 
-    {
+    for (int i = 1; i <= args->num; ++i) {
         printf("The %s line %d is printed\n", args->name, i);
     }
 
@@ -29,8 +26,7 @@ void *print_lines(void *arg)
 // Т.е. возникнет висячая ссылка, и чтобы этого избежать я использую ключевое слово static
 // Все объяснения, как что работает я расположил в файле explanation.txt
 
-int main(void) 
-{
+int main(void) {
     pthread_t pthread_id;
 
     static function_args child = {"child", LINES_NUM};
@@ -38,8 +34,7 @@ int main(void)
     
     int create_status = pthread_create(&pthread_id, NULL, print_lines, &child);
 
-    if (create_status != SUCCESS) 
-    {
+    if (create_status != SUCCESS) {
         errno = create_status;
         perror("pthread_create");
 

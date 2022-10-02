@@ -12,13 +12,13 @@ typedef struct function_args {
 } function_args;
 
 void *print_lines(void *arg) {
-    function_args *args = (function_args*)arg;
+    function_args *args = (function_args *)arg;
 
     for (int i = 1; i <= args->num; ++i) {
         printf("The %s line %d is printed\n", args->name, i);
     }
 
-    pthread_exit(NULL);
+    return NULL;
 }
 
 int main(void) {
@@ -45,8 +45,7 @@ int main(void) {
         return FAILURE;
     }
 
-    printf("\nThe main process is started\n");
     print_lines(&parent);
     
-    phread_exit(NULL);
+    pthread_exit(NULL);
 }

@@ -18,7 +18,7 @@ void *print_lines(void *arg) {
         printf("The %s line %d is printed\n", args->name, i);
     }
 
-    pthread_exit(NULL);
+    return NULL;
 }
 
 // Я использовал здесь static над этими переменными, для того чтобы передостеречься от одного исхода
@@ -26,14 +26,15 @@ void *print_lines(void *arg) {
 // Т.е. возникнет висячая ссылка, и чтобы этого избежать я использую ключевое слово static
 // Все объяснения, как что работает я расположил в файле explanation.txt
 
-
-static function_args child = {"child", LINES_NUM};
-static function_args parent = {"parent", LINES_NUM};
-
 int main(void) {
     pthread_t pthread_id;
 
+    static function_args child = {"child", LINES_NUM};
+    static function_args parent = {"parent", LINES_NUM};
+
     int create_status = pthread_create(&pthread_id, NULL, print_lines, &child);
+    
+    printf("%d", FAILURE);
 
     if (create_status != SUCCESS) {
         errno = create_status;
@@ -46,3 +47,4 @@ int main(void) {
     
     pthread_exit(NULL);
 }
+

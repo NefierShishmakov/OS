@@ -14,8 +14,7 @@ typedef struct lines_t {
     int pthread_num;
 } lines_t;
 
-void init_lines_t(lines_t *arg, char **start_point, const int pthread_num)
-{
+void init_lines_t(lines_t *arg, char **start_point, const int pthread_num) {
     arg->strings = start_point;
     arg->pthread_num = pthread_num;
 }
@@ -77,3 +76,4 @@ int main(void) {
 
     pthread_exit(NULL);
 }
+

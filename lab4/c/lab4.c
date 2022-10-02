@@ -51,8 +51,9 @@ int main(void) {
         return FAILURE;
     }
 
-    if (res == PTHREAD_CANCELED) {
-        printf("The child pthread was cancelled\n");
+    if (res != PTHREAD_CANCELED) {
+        fprintf(stderr, "The child pthread was cancelled\n");
+        return FAILURE;
     }
 
     pthread_exit(NULL);

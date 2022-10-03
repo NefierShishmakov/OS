@@ -14,7 +14,7 @@
 typedef unsigned long long ull;
 
 void print_goodbye() {
-    printf("Goodbye\n");
+    printf("Message from the clean-up handler\n");
 }
 
 void *print_lines() {
@@ -25,6 +25,7 @@ void *print_lines() {
     while (TRUE) {
         printf("Hello, I\'m your %lld friend\n", i);
         ++i;
+        pthread_testcancel();
     }
 
     pthread_cleanup_pop(EXECUTE);
@@ -68,3 +69,4 @@ int main(void) {
 
     pthread_exit(NULL);
 }
+

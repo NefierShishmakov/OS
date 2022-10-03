@@ -23,7 +23,7 @@ void *print_lines() {
 
 int main(void) {
     pthread_t pthread_id;
-
+    //
     int create_status = pthread_create(&pthread_id, NULL, print_lines, NULL);
 
     if (create_status != SUCCESS) {

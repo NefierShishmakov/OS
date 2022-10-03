@@ -31,9 +31,9 @@ int main(void) {
         perror("pthread_create");
         return FAILURE;
     }
-
+    
     sleep(SEC_TO_SLEEP);
-
+    
     int cancel_status = pthread_cancel(pthread_id);
 
     if (cancel_status != SUCCESS) {
@@ -53,9 +53,10 @@ int main(void) {
     }
 
     if (res != PTHREAD_CANCELED) {
-        fprintf(stderr, "The child pthread was cancelled\n");
+        fprintf(stderr, "The child pthread was not cancelled\n");
         return FAILURE;
     }
 
     pthread_exit(NULL);
 }
+

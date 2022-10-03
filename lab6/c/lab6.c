@@ -1,4 +1,5 @@
-int main(void)
-{
+#include <pthread.>
+
+int main(void) {
     return 0;
 }

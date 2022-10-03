@@ -24,27 +24,10 @@ void *print_lines(void *arg) {
     lines_t *lines = (lines_t *)arg;
 
     for (int i = 0; i < lines->strings_num; ++i) {
-        printf("Messsage from pthread with %d id: %s\n", lines->pthread_num, lines->strings[i]);
+        printf("Messsage from pthread with number - %d: %s\n", lines->pthread_num, lines->strings[i]);
     }
 
     pthread_exit(NULL);
-}
-
-int pthreads_creation(pthread_t *pthreads_ids, char **lines, int *lines_distribution) {
-    for (int i = 0, idx = 0; i < PTHREADS_NUM; ++i, idx += lines_distribution[i]) {
-        lines_t pthread_lines;
-        init_lines_t(&pthread_lines, &lines[idx], i + 1, lines_distribution[i]);
-
-        int create_status = pthread_create(&pthreads_ids[i], NULL, print_lines, &pthread_lines);
-
-        if (create_status != SUCCESS) {
-            errno = create_status;
-            perror("pthread_create");
-            return ERROR;
-        }
-    }
-
-    return SUCCESS;
 }
 
 int pthreads_join(pthread_t *pthreads_ids) {
@@ -64,11 +47,12 @@ int pthreads_join(pthread_t *pthreads_ids) {
 void init_lines_distribution(int *lines_distribution) {
     int lines_per_pthread = TOTAL_LINES_NUM / PTHREADS_NUM;
     int remainder = TOTAL_LINES_NUM % PTHREADS_NUM;
-    lines_distribution[PTHREADS_NUM - 1] += remainder;
-
+    
     for (int i = 0; i < PTHREADS_NUM; ++i) {
-        lines_distribution[i] += lines_per_pthread;
+        lines_distribution[i] = lines_per_pthread;
     }
+
+    lines_distribution[PTHREADS_NUM - 1] += remainder;
 } 
 
 int main(void) {
@@ -104,12 +88,20 @@ int main(void) {
     int lines_distribution[PTHREADS_NUM] = {0};
 
     init_lines_distribution(lines_distribution);
-    
-    int pthreads_creation_status = pthreads_creation(pthreads_ids, lines, lines_distribution);
 
-    if (pthreads_creation_status == ERROR) {
-        return EXIT_FAILURE;
-    }
+    lines_t pthreads_lines[PTHREADS_NUM];
+
+    for (int i = 0, idx = 0; i < PTHREADS_NUM; idx += lines_distribution[i], ++i) {
+        init_lines_t(&pthreads_lines[i], &lines[idx], i + 1, lines_distribution[i]);
+
+        int create_status = pthread_create(&pthreads_ids[i], NULL, print_lines, &pthreads_lines[i]);
+
+        if (create_status != SUCCESS) {
+            errno = create_status;
+            perror("pthread_create");
+            return EXIT_FAILURE;
+        }
+    } 
     
     int pthreads_join_status = pthreads_join(pthreads_ids);
 

@@ -1,10 +1,10 @@
 #include <pthread.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <errno.h>
 
 #define SUCCESS 0
-#define FAILURE 1
 
 #define SEC_TO_SLEEP 2
 #define TRUE 1
@@ -29,7 +29,7 @@ int main(void) {
     if (create_status != SUCCESS) {
         errno = create_status;
         perror("pthread_create");
-        return FAILURE;
+        return EXIT_FAILURE;
     }
     
     sleep(SEC_TO_SLEEP);
@@ -39,7 +39,7 @@ int main(void) {
     if (cancel_status != SUCCESS) {
         errno = cancel_status;
         perror("pthread_cancel");
-        return FAILURE;
+        return EXIT_FAILURE;
     }
 
     void *res;
@@ -49,14 +49,14 @@ int main(void) {
     if (join_status != SUCCESS) {
         errno = join_status;
         perror("pthread_join");
-        return FAILURE;
+        return EXIT_FAILURE;
     }
 
     if (res != PTHREAD_CANCELED) {
         fprintf(stderr, "The child pthread was not cancelled\n");
-        return FAILURE;
+        return EXIT_FAILURE;
     }
 
-    pthread_exit(NULL);
+    return EXIT_SUCCESS;
 }
 

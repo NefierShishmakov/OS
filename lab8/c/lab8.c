@@ -48,7 +48,7 @@ void *get_partial_sum(void *arg) {
 }
 
 int args_analyzer(int argc, char **argv, int *result_pthreads_num) {
-    if (argc > DEFAULT_ARGC_NUM) {
+    if (argc != DEFAULT_ARGC_NUM) {
         return ARGS_NUMBER_ERROR;
     }
 
@@ -71,13 +71,13 @@ int args_analyzer(int argc, char **argv, int *result_pthreads_num) {
 void print_error_message(int error_num) {
     switch (error_num) {
         case ARGS_NUMBER_ERROR:
-            fprintf(stderr, "Too many arguments!\n");
+            fprintf(stderr, "Error: There must be only two arguments!\n");
             break;
         case CONVERTION_ERROR:
-            fprintf(stderr, "The second argument (threads number) must be integer!\n");
+            fprintf(stderr, "Error: The second argument (threads number) must be integer!\n");
             break;
         case PTHREADS_NUM_ERROR:
-            fprintf(stderr, "Threads number must be bigger than zero and less or equal than %d!\n", MAX_PTHREADS_NUM);
+            fprintf(stderr, "Error: Threads number must be bigger than zero and less or equal than %d!\n", MAX_PTHREADS_NUM);
             break;
     }
 }

@@ -31,17 +31,19 @@ void *print_lines(void *arg) {
 }
 
 int pthreads_join(pthread_t *pthreads_ids) {
+    int exit_status = SUCCESS;
+    
     for (int i = 0; i < PTHREADS_NUM; ++i) {
         int join_status = pthread_join(pthreads_ids[i], NULL);
 
         if (join_status != SUCCESS) {
             errno = join_status;
             perror("pthread_join");
-            return ERROR;
+            exit_status = ERROR;
         }
     }
 
-    return SUCCESS;
+    return exit_status;
 }
 
 void init_lines_distribution(int *lines_distribution) {

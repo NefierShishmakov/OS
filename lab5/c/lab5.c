@@ -19,7 +19,7 @@ void print_goodbye() {
 
 void *print_lines() {
     ull i = 1;
-    //
+    
     pthread_cleanup_push(print_goodbye, NULL);
 
     while (TRUE) {

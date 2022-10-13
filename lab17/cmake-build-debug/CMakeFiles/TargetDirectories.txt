@@ -1,0 +1,3 @@
+/home/mrx/Programming/C/OS/lab17/cmake-build-debug/CMakeFiles/lab17.dir
+/home/mrx/Programming/C/OS/lab17/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/mrx/Programming/C/OS/lab17/cmake-build-debug/CMakeFiles/rebuild_cache.dir

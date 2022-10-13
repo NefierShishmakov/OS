@@ -99,6 +99,9 @@ int main(void) {
         return EXIT_FAILURE;
     }
     
+    pthread_mutex_destroy(&mutex1);
+    pthread_mutex_destroy(&mutex2);
+    pthread_mutex_destroy(&mutex3);
     return EXIT_SUCCESS;
 }
 

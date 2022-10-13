@@ -10,15 +10,49 @@
 
 pthread_mutex_t mutex;
 
+
+void swap(Node *a, Node *b) {
+    char *temp = a->line;
+    /* this is not right, think how to copy strings correctly
+    a->line = b->line;
+    b->line = temp;
+    */
+}
+
+void bubbleSort(Node *head) {
+    int swapped, i;
+    struct Node *ptr1;
+    struct Node *lptr = NULL;
+
+    if (head == NULL) {
+        return;
+    }
+
+    do {
+        swapped = 0;
+        ptr1 = head;
+
+        while (ptr1->next != lptr) {
+            if (ptr1->line > ptr1->next->line) {
+                swap(ptr1, ptr1->next);
+                swapped = 1;
+            }
+            ptr1 = ptr1->next;
+        }
+
+        lptr = ptr1;
+    } while (swapped);
+}
+
 void *sort_list(void *arg) {
     Node *head = (Node *)arg;
 
     while (true) {
+        pthread_testcancel();
         sleep(SEC_TO_SLEEP);
-        pthread_mutex_lock(&mutex);
-        if (head != NULL) {
 
-        }
+        pthread_mutex_lock(&mutex);
+        bubbleSort(head);
         pthread_mutex_unlock(&mutex);
     }
 }
@@ -47,6 +81,23 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
+    char *line = NULL;
+    size_t len = 0;
+
+    while (getline(&line, &len, stdin)) {
+
+    }
+
+    status = pthread_cancel(pthread_id);
+
+    if (status != SUCCESS) {
+        errno = status;
+        perror("pthread_cancel");
+
+
+        // Maybe I should return sth else????
+        return EXIT_FAILURE;
+    }
 
     status = pthread_mutex_destroy(&mutex);
 

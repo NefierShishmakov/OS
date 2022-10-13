@@ -36,6 +36,13 @@ int main(void) {
         return FAILURE;
     }
 
+    int detach_status = pthread_detach(pthread_id);
+
+    if (detach_status != SUCCESS) {
+        errno = detach_status;
+        perror("pthread_detach");
+    }
+
     print_lines(&parent);
     
     pthread_exit(NULL);

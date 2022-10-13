@@ -31,7 +31,7 @@ void *print_lines(void *arg) {
 }
 
 int pthreads_join(pthread_t *pthreads_ids) {
-    int exit_status = SUCCESS;
+    int status = SUCCESS;
     
     for (int i = 0; i < PTHREADS_NUM; ++i) {
         int join_status = pthread_join(pthreads_ids[i], NULL);
@@ -39,11 +39,11 @@ int pthreads_join(pthread_t *pthreads_ids) {
         if (join_status != SUCCESS) {
             errno = join_status;
             perror("pthread_join");
-            exit_status = ERROR;
+            status = ERROR;
         }
     }
 
-    return exit_status;
+    return status;
 }
 
 void init_lines_distribution(int *lines_distribution) {

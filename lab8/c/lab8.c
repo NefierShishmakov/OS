@@ -7,13 +7,12 @@
 #define DEFAULT_ARGC_NUM 2
 #define PTHREADS_NUM_ARGC_INDEX 1
 #define MAX_PTHREADS_NUM 256
+#define MIN_PTHREADS_NUM 1
 
 #define SUCCESS 0
 #define SUCCESS_CONVERTION_STATUS 0
 
-#define PTHREADS_NUM_ERROR -3
-#define CONVERTION_ERROR -2
-#define ARGS_NUMBER_ERROR -1
+#define ERROR -1
 
 typedef struct info {
     int start_point;
@@ -49,7 +48,7 @@ void *get_partial_sum(void *arg) {
 
 int args_analyzer(int argc, char **argv, int *result_pthreads_num) {
     if (argc != DEFAULT_ARGC_NUM) {
-        return ARGS_NUMBER_ERROR;
+        return ERROR;
     }
 
     errno = SUCCESS_CONVERTION_STATUS;    
@@ -57,28 +56,30 @@ int args_analyzer(int argc, char **argv, int *result_pthreads_num) {
 
     if (errno != SUCCESS_CONVERTION_STATUS) {
         perror("strtol");
-        return CONVERTION_ERROR;
+        return ERROR;
     }
     
-    if (pthreads_num < 0 || pthreads_num > MAX_PTHREADS_NUM) {
-        return PTHREADS_NUM_ERROR;
+    if (pthreads_num < MIN_PTHREADS_NUM || pthreads_num > MAX_PTHREADS_NUM) {
+        return ERROR;
     }
     
     *result_pthreads_num = pthreads_num;
+
     return SUCCESS;
 }
 
-void print_error_message(int error_num) {
-    switch (error_num) {
-        case ARGS_NUMBER_ERROR:
-            fprintf(stderr, "Error: There must be only two arguments!\n");
-            break;
-        case CONVERTION_ERROR:
-            fprintf(stderr, "Error: The second argument (threads number) must be integer!\n");
-            break;
-        case PTHREADS_NUM_ERROR:
-            fprintf(stderr, "Error: Threads number must be bigger than zero and less or equal than %d!\n", MAX_PTHREADS_NUM);
-            break;
+void print_error_message() {
+    fprintf(stderr, "Usage: arg1 - number of threads\n");
+}
+
+void join_created_threads(pthread_t *pthreads_ids, const int last_created_thread_idx) {
+    for (int i = 0; i <= last_created_thread_idx; ++i) {
+        int join_status = pthread_join(pthreads_ids[i], NULL);
+
+        if (join_status != SUCCESS) {
+            errno = join_status;
+            perror("pthread_join");
+        }
     }
 }
 
@@ -94,6 +95,8 @@ void calculate_pi(double *pi, const int pthreads_num) {
         if (create_status != SUCCESS) {
             errno = create_status;
             perror("pthread_create");
+            
+            join_created_threads(pthreads_ids, i - 1);
 
             return;
         }
@@ -127,7 +130,7 @@ int main(int argc, char **argv) {
     int args_analyzer_status = args_analyzer(argc, argv, &pthreads_num);
 
     if (args_analyzer_status != SUCCESS) {
-        print_error_message(args_analyzer_status);
+        print_error_message();
         return EXIT_FAILURE;
     }
     

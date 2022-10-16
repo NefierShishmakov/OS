@@ -1,4 +1,3 @@
-#include <string.h>
 #include <unistd.h>
 #include <pthread.h>
 #include <errno.h>
@@ -8,53 +7,91 @@
 #define SUCCESS 0
 #define SEC_TO_SLEEP 5
 
+#define CONTINUE 1
+#define END_OF_DATA 2
+
 pthread_mutex_t mutex;
 
+Node *head = NULL;
 
 void swap(Node *a, Node *b) {
-    char *temp = a->line;
-    /* this is not right, think how to copy strings correctly
-    a->line = b->line;
-    b->line = temp;
-    */
+    char temp[LINE_LENGTH] = {0};
+    strcpy(temp, a->line);
+
+    memset(a->line, 0, LINE_LENGTH);
+    strcpy(a->line, b->line);
+    memset(b->line, 0, LINE_LENGTH);
+    strcpy(b->line, temp);
 }
 
-void bubbleSort(Node *head) {
-    int swapped, i;
-    struct Node *ptr1;
-    struct Node *lptr = NULL;
+void handle_error(int status, char *error_reason) {
+    errno = status;
+    perror(error_reason);
+}
 
+void mutex_destroy_handler() {
+    int status = pthread_mutex_destroy(&mutex);
+
+    if (status != SUCCESS) {
+        handle_error(status, "pthread_mutex_destroy");
+    }
+}
+
+bool isBigger(char *first, char *second) {
+    for (int i = 0; i < first[i] != '\n' && second[i] != '\n'; ++i) {
+        if ((first[i] > second[i]) || (first[i] == second[i] && strlen(first) > strlen(second))) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+void bubbleSort() {
     if (head == NULL) {
         return;
     }
 
-    do {
-        swapped = 0;
-        ptr1 = head;
+    int nodes_num = head->nodes_num;
 
-        while (ptr1->next != lptr) {
-            if (ptr1->line > ptr1->next->line) {
-                swap(ptr1, ptr1->next);
-                swapped = 1;
+    for (int i = 0; i < nodes_num - 1; ++i) {
+        Node *first = head;
+        Node *second = head->next;
+
+        for (int j = 0; j < nodes_num - i - 1; ++j) {
+            if (isBigger(first->line, second->line)) {
+                swap(first, second);
             }
-            ptr1 = ptr1->next;
-        }
 
-        lptr = ptr1;
-    } while (swapped);
+            first = second;
+            second = second->next;
+        }
+    }
 }
 
 void *sort_list(void *arg) {
-    Node *head = (Node *)arg;
-
     while (true) {
         pthread_testcancel();
         sleep(SEC_TO_SLEEP);
 
         pthread_mutex_lock(&mutex);
-        bubbleSort(head);
+        bubbleSort();
         pthread_mutex_unlock(&mutex);
     }
+}
+
+int handle_new_line(char *line, size_t len, int *nodes_num) {
+    int handle_status = CONTINUE;
+
+    if (len == 1 && line[0] == '\n') {
+        print_list(head);
+    } else if (len == 2 && line[0] == 'q') {
+        handle_status = END_OF_DATA;
+    } else {
+        push(&head, line, ++(*nodes_num));
+    }
+
+    return handle_status;
 }
 
 int main(void) {
@@ -64,49 +101,71 @@ int main(void) {
     status = pthread_mutex_init(&mutex, NULL);
 
     if (status != SUCCESS) {
-        errno = status;
-        perror("pthread_mutex_init");
-
+        handle_error(status, "pthread_mutex_init");
         return EXIT_FAILURE;
     }
 
-    Node *head = NULL;
-
-    status = pthread_create(&pthread_id, NULL, sort_list, head);
+    status = pthread_create(&pthread_id, NULL, sort_list, NULL);
 
     if (status != SUCCESS) {
-        errno = status;
-        perror("pthread_create");
-
+        handle_error(status, "pthread_create");
+        mutex_destroy_handler();
         return EXIT_FAILURE;
     }
 
-    char *line = NULL;
-    size_t len = 0;
+    char line[LINE_LENGTH] = {0};
 
-    while (getline(&line, &len, stdin)) {
+    int nodes_num = 0;
 
+    while (fgets(line, LINE_LENGTH, stdin)) {
+        int handle_status;
+
+        pthread_mutex_lock(&mutex);
+        handle_status = handle_new_line(line, strlen(line), &nodes_num);
+
+        memset(line, 0, LINE_LENGTH);
+        pthread_mutex_unlock(&mutex);
+
+        if (handle_status == END_OF_DATA) {
+            break;
+        }
     }
 
     status = pthread_cancel(pthread_id);
 
     if (status != SUCCESS) {
-        errno = status;
-        perror("pthread_cancel");
+        handle_error(status, "pthread_cancel");
+        mutex_destroy_handler();
+        free_list(head);
+        return EXIT_FAILURE;
+    }
 
+    void *retval;
 
-        // Maybe I should return sth else????
+    status = pthread_join(pthread_id, &retval);
+
+    if (status != SUCCESS) {
+        handle_error(status, "pthread_join");
+        mutex_destroy_handler();
+        free_list(head);
+        return EXIT_FAILURE;
+    }
+
+    if (retval != PTHREAD_CANCELED) {
+        fprintf(stderr, "Error: thread was not cancelled");
+        mutex_destroy_handler();
+        free_list(head);
         return EXIT_FAILURE;
     }
 
     status = pthread_mutex_destroy(&mutex);
 
     if (status != SUCCESS) {
-        errno = status;
-        perror("pthread_mutex_destroy");
-
+        handle_error(status, "pthread_mutex_destroy");
+        free_list(head);
         return EXIT_FAILURE;
     }
 
+    free_list(head);
     return EXIT_SUCCESS;
 }

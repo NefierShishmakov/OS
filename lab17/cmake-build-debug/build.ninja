@@ -55,6 +55,12 @@ build CMakeFiles/lab17.dir/main.c.o: C_COMPILER__lab17_Debug /home/mrx/Programmi
   OBJECT_DIR = CMakeFiles/lab17.dir
   OBJECT_FILE_DIR = CMakeFiles/lab17.dir
 
+build CMakeFiles/lab17.dir/node.c.o: C_COMPILER__lab17_Debug /home/mrx/Programming/C/OS/lab17/node.c || cmake_object_order_depends_target_lab17
+  DEP_FILE = CMakeFiles/lab17.dir/node.c.o.d
+  FLAGS = -g -std=gnu11
+  OBJECT_DIR = CMakeFiles/lab17.dir
+  OBJECT_FILE_DIR = CMakeFiles/lab17.dir
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target lab17
@@ -63,7 +69,7 @@ build CMakeFiles/lab17.dir/main.c.o: C_COMPILER__lab17_Debug /home/mrx/Programmi
 #############################################
 # Link the executable lab17
 
-build lab17: C_EXECUTABLE_LINKER__lab17_Debug CMakeFiles/lab17.dir/main.c.o
+build lab17: C_EXECUTABLE_LINKER__lab17_Debug CMakeFiles/lab17.dir/main.c.o CMakeFiles/lab17.dir/node.c.o
   FLAGS = -g
   OBJECT_DIR = CMakeFiles/lab17.dir
   POST_BUILD = :

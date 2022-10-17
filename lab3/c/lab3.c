@@ -30,10 +30,10 @@ void *print_lines(void *arg) {
     pthread_exit(NULL);
 }
 
-int pthreads_join(pthread_t *pthreads_ids) {
+int join_created_pthreads(pthread_t *pthreads_ids, int last_idx_of_created_pthread) {
     int status = SUCCESS;
     
-    for (int i = 0; i < PTHREADS_NUM; ++i) {
+    for (int i = 0; i <= last_idx_of_created_pthread; ++i) {
         int join_status = pthread_join(pthreads_ids[i], NULL);
 
         if (join_status != SUCCESS) {
@@ -101,11 +101,13 @@ int main(void) {
         if (create_status != SUCCESS) {
             errno = create_status;
             perror("pthread_create");
+
+            join_created_pthreads(pthreads_ids, i - 1);
             return EXIT_FAILURE;
         }
     } 
     
-    int pthreads_join_status = pthreads_join(pthreads_ids);
+    int pthreads_join_status = join_created_pthreads(pthreads_ids, PTHREADS_NUM - 1);
 
     if (pthreads_join_status == ERROR) {
         return EXIT_FAILURE;

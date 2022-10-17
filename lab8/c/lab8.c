@@ -83,7 +83,7 @@ void join_created_threads(pthread_t *pthreads_ids, const int last_created_thread
     }
 }
 
-void calculate_pi(double *pi, const int pthreads_num) {
+int calculate_pi(double *pi, const int pthreads_num) {
     info pthreads_args[pthreads_num];
     init_pthreads_args(pthreads_args, pthreads_num);
     
@@ -98,9 +98,11 @@ void calculate_pi(double *pi, const int pthreads_num) {
             
             join_created_threads(pthreads_ids, i - 1);
 
-            return;
+            return ERROR;
         }
     }
+
+    int join_result = SUCCESS;
 
     for (int i = 0; i < pthreads_num; ++i) {
         void *ret_val;
@@ -111,13 +113,19 @@ void calculate_pi(double *pi, const int pthreads_num) {
             errno = join_status;
             perror("pthread_join");
 
-            return;
+            join_result = ERROR;
         }
 
         (*pi) += *(double *)ret_val;
     }
 
+    if (join_result != SUCCESS) {
+        return ERROR;
+    }
+
     (*pi) *= 4.0;
+
+    return SUCCESS;
 }
 
 void print_result(const double *pi) {
@@ -127,15 +135,20 @@ void print_result(const double *pi) {
 int main(int argc, char **argv) {
     int pthreads_num;
 
-    int args_analyzer_status = args_analyzer(argc, argv, &pthreads_num);
+    int status = args_analyzer(argc, argv, &pthreads_num);
 
-    if (args_analyzer_status != SUCCESS) {
+    if (status != SUCCESS) {
         print_error_message();
         return EXIT_FAILURE;
     }
     
     double pi = 0;
-    calculate_pi(&pi, pthreads_num);
+    status = calculate_pi(&pi, pthreads_num);
+
+    if (status != SUCCESS) {
+        return EXIT_FAILURE;
+    }
+
     print_result(&pi);
 
     return EXIT_SUCCESS;

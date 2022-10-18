@@ -9,7 +9,7 @@
 #define PTHREADS_NUM 4
 
 typedef struct lines_t {
-    char **strings;
+    char **strings; 
     int pthread_num;
     int strings_num;
 } lines_t;
@@ -57,8 +57,14 @@ void init_lines_distribution(int *lines_distribution) {
     lines_distribution[PTHREADS_NUM - 1] += remainder;
 }
 
-int create_pthreads(pthread_t *pthreads_ids, char **lines, int *lines_distribution, lines_t *pthreads_lines) {
+int create_pthreads(pthread_t *pthreads_ids, char **lines) {
+    int lines_distribution[PTHREADS_NUM] = {0};
+
+    init_lines_distribution(lines_distribution);
+    lines_t pthreads_lines[PTHREADS_NUM];
+
     for (int i = 0, idx = 0; i < PTHREADS_NUM; idx += lines_distribution[i], ++i) {
+        
         init_lines_t(&pthreads_lines[i], &lines[idx], i + 1, lines_distribution[i]);
 
         int create_status = pthread_create(&pthreads_ids[i], NULL, print_lines, &pthreads_lines[i]);
@@ -105,14 +111,8 @@ int main(void) {
         "TRYING",
         "POP"
     };
-
-    int lines_distribution[PTHREADS_NUM] = {0};
-
-    init_lines_distribution(lines_distribution);
-
-    lines_t pthreads_lines[PTHREADS_NUM];
-
-    int status = create_pthreads(pthreads_ids, lines, lines_distribution, pthreads_lines);
+        
+    int status = create_pthreads(pthreads_ids, lines);
 
     if (status == ERROR) {
         return EXIT_FAILURE;

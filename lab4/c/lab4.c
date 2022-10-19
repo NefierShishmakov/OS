@@ -15,9 +15,9 @@ void *print_lines() {
     ull i = 1;
 
     while (TRUE) {
+        pthread_testcancel();
         printf("Hello, I\'m your %lld friend\n", i);
         ++i;
-        pthread_testcancel();
     }
 }
 

@@ -7,21 +7,31 @@
 #define SUCCESS 0
 #define SEC_TO_SLEEP 5
 
+#define MAX_ENTERED_LINE_LENGTH 503
+
 #define CONTINUE 1
 #define END_OF_DATA 2
 
 pthread_mutex_t mutex;
 
-Node *head = NULL;
+enum operations {
+    PRINT_LIST,
+    PUSH_LINES,
+    END_INPUT
+};
 
-void swap(Node *a, Node *b) {
+int get_result_line_length(size_t entered_line_length) {
+    return (entered_line_length > (LINE_LENGTH - 1) ? (SLICED_LINE_LENGTH - 1) : (LINE_LENGTH - 1));
+}
+
+void swap(char *first_line, char *second_line) {
     char temp[LINE_LENGTH] = {0};
-    strcpy(temp, a->line);
+    strcpy(temp, first_line);
 
-    memset(a->line, 0, LINE_LENGTH);
-    strcpy(a->line, b->line);
-    memset(b->line, 0, LINE_LENGTH);
-    strcpy(b->line, temp);
+    memset(first_line, 0, LINE_LENGTH);
+    strcpy(first_line, second_line);
+    memset(second_line, 0, LINE_LENGTH);
+    strcpy(second_line, temp);
 }
 
 void handle_error(int status, char *error_reason) {
@@ -37,66 +47,108 @@ void mutex_destroy_handler() {
     }
 }
 
-bool isBigger(char *first, char *second) {
-    for (int i = 0; i < first[i] != '\n' && second[i] != '\n'; ++i) {
-        if ((first[i] > second[i]) || (first[i] == second[i] && strlen(first) > strlen(second))) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-void bubbleSort() {
-    if (head == NULL) {
+void bubbleSort(Node **head) {
+    if ((*head) == NULL) {
         return;
     }
 
-    int nodes_num = head->nodes_num;
+    Node *left_ptr;
+    Node *right_ptr = NULL;
 
-    for (int i = 0; i < nodes_num - 1; ++i) {
-        Node *first = head;
-        Node *second = head->next;
+    bool is_swapped = true;
 
-        for (int j = 0; j < nodes_num - i - 1; ++j) {
-            if (isBigger(first->line, second->line)) {
-                swap(first, second);
+    do {
+        is_swapped = false;
+        left_ptr = *head;
+
+        while (left_ptr->next != right_ptr) {
+            if (strcmp(left_ptr->line, left_ptr->next->line) > 0) {
+                swap(left_ptr->line, left_ptr->next->line);
+                is_swapped = true;
             }
 
-            first = second;
-            second = second->next;
+            left_ptr = left_ptr->next;
         }
-    }
+
+        right_ptr = left_ptr;
+    } while (is_swapped);
 }
 
 void *sort_list(void *arg) {
+    Node **head = (Node **)arg;
+
     while (true) {
         pthread_testcancel();
         sleep(SEC_TO_SLEEP);
 
         pthread_mutex_lock(&mutex);
-        bubbleSort();
+        bubbleSort(head);
         pthread_mutex_unlock(&mutex);
     }
 }
 
-int handle_new_line(char *line, size_t len, int *nodes_num) {
-    int handle_status = CONTINUE;
-
-    if (len == 1 && line[0] == '\n') {
-        print_list(head);
+int get_operation(char *line, size_t len) {
+    if (line[0] == '\n') {
+        return PRINT_LIST;
     } else if (len == 2 && line[0] == 'q') {
-        handle_status = END_OF_DATA;
-    } else {
-        push(&head, line, ++(*nodes_num));
+        return END_INPUT;
     }
 
-    return handle_status;
+    return PUSH_LINES;
+}
+
+void push_lines(Node **head, char *line) {
+    line[strcspn(line, "\r\n")] = '\0';
+
+    int line_length = get_result_line_length(strlen(line));
+    int start = 0;
+
+    while (start < strlen(line)) {
+        push(head, &line[start], line_length);
+        start += line_length;
+    }
+}
+
+int handle_new_line(Node **head, char *line, size_t len) {
+    int operation = get_operation(line, len);
+
+    switch (operation) {
+        case PRINT_LIST:
+            print_list(*head);
+            break;
+        case PUSH_LINES:
+            push_lines(head, line);
+            break;
+        case END_INPUT:
+           return END_OF_DATA;
+    }
+
+    return CONTINUE;
+}
+
+void read_lines(Node **head) {
+    char line[MAX_ENTERED_LINE_LENGTH] = {0};
+
+    int read_status = CONTINUE;
+
+    while (read_status != END_OF_DATA) {
+        printf("Enter a new line or enter \'q\' to finish entering data or press \'enter\' "
+               "to print all lines:  ");
+
+        fgets(line, MAX_ENTERED_LINE_LENGTH, stdin);
+
+        pthread_mutex_lock(&mutex);
+        read_status = handle_new_line(head, line, strlen(line));
+
+        memset(line, 0, MAX_ENTERED_LINE_LENGTH);
+        pthread_mutex_unlock(&mutex);
+    }
 }
 
 int main(void) {
     int status;
     pthread_t pthread_id;
+    Node *head = NULL;
 
     status = pthread_mutex_init(&mutex, NULL);
 
@@ -105,7 +157,7 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
-    status = pthread_create(&pthread_id, NULL, sort_list, NULL);
+    status = pthread_create(&pthread_id, NULL, sort_list, &head);
 
     if (status != SUCCESS) {
         handle_error(status, "pthread_create");
@@ -113,23 +165,7 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
-    char line[LINE_LENGTH] = {0};
-
-    int nodes_num = 0;
-
-    while (fgets(line, LINE_LENGTH, stdin)) {
-        int handle_status;
-
-        pthread_mutex_lock(&mutex);
-        handle_status = handle_new_line(line, strlen(line), &nodes_num);
-
-        memset(line, 0, LINE_LENGTH);
-        pthread_mutex_unlock(&mutex);
-
-        if (handle_status == END_OF_DATA) {
-            break;
-        }
-    }
+    read_lines(&head);
 
     status = pthread_cancel(pthread_id);
 

@@ -1,9 +1,8 @@
 #include "node.h"
 
-Node *create_node(char *line, int nodes_num) {
+Node *create_node(char *line, int chars_num_to_copy) {
     Node *new_node = (Node *)malloc(sizeof(Node));
-    strcpy(new_node->line, line);
-    new_node->nodes_num = nodes_num;
+    strncpy(new_node->line, line, chars_num_to_copy);
     new_node->next = NULL;
 
     return new_node;
@@ -11,7 +10,7 @@ Node *create_node(char *line, int nodes_num) {
 
 void print_list(Node *head) {
     while (head != NULL) {
-        printf("%s", head->line);
+        printf("%s\n", head->line);
         head = head->next;
     }
 }
@@ -25,8 +24,8 @@ void free_list(Node *head) {
     }
 }
 
-void push(Node **head, char *line, int nodes_num) {
-    Node *new_node = create_node(line, nodes_num);
+void push(Node **head, char *line, int chars_num_to_copy) {
+    Node *new_node = create_node(line, chars_num_to_copy);
 
     if ((*head) == NULL) {
         (*head) = new_node;

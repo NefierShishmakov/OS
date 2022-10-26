@@ -19,7 +19,7 @@ void handle_error(int status, char *error_reason) {
 }
 
 void *routine(void *arg) {
-    int line_length = strlen((char *)arg) - 1;
+    int line_length = strlen((char *)arg);
 
     int usleep_status = usleep(line_length * SORT_COEFFICIENT);
     
@@ -28,9 +28,13 @@ void *routine(void *arg) {
         return NULL;
     }
 
-    printf("%s", (char *)arg);
+    printf("%s\n", (char *)arg);
 
     pthread_exit(NULL);
+}
+
+void remove_line_break_char(char *line) {
+    line[strcspn(line, "\r\n")] = '\0';
 }
 
 int read_lines(char lines[MAX_LINES_NUM][MAX_LINE_LENGTH], int *result_lines_num) {
@@ -53,6 +57,9 @@ int read_lines(char lines[MAX_LINES_NUM][MAX_LINE_LENGTH], int *result_lines_num
             
             break;
         }
+        
+        remove_line_break_char(&lines[(*result_lines_num)][0]);
+        
 
         ++(*result_lines_num);
     }

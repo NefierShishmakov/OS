@@ -19,7 +19,7 @@ void handle_error(int status, char *error_reason) {
 }
 
 void *routine(void *arg) {
-    int line_length = strlen((char *)arg);
+    int line_length = strlen((char *)arg) - 1;
 
     int usleep_status = usleep(line_length * SORT_COEFFICIENT);
     

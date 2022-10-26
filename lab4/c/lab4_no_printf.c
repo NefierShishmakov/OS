@@ -9,14 +9,15 @@
 #define SEC_TO_SLEEP 2
 #define TRUE 1
 
-typedef unsigned long long ull;
+//typedef unsigned long long ull;
 
 void *print_lines() {
-    ull i = 1;
+    //ull i = 1;
 
     while (TRUE) {
         pthread_testcancel();
-        printf("Hello, I\'m your %lld friend\n", i++);
+        //printf("Hello, I\'m your %lld friend\n", i);
+        //++i;
     }
 }
 

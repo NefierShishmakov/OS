@@ -15,9 +15,9 @@
 pthread_mutex_t mutex;
 
 enum operations {
-    PRINT_LIST,
-    PUSH_LINES,
-    END_INPUT
+    PRINT_LIST = 1,
+    PUSH_LINES = 2,
+    END_INPUT = 3
 };
 
 int get_result_line_length(size_t entered_line_length) {
@@ -101,7 +101,7 @@ void push_lines(Node **head, char *line) {
     line[strcspn(line, "\r\n")] = '\0';
 
     int line_length = get_result_line_length(strlen(line));
-    int start = 0;
+    size_t start = 0;
 
     while (start < strlen(line)) {
         push(head, &line[start], line_length);
@@ -126,25 +126,6 @@ int handle_new_line(Node **head, char *line, size_t len) {
     return CONTINUE;
 }
 
-void read_lines(Node **head) {
-    char line[MAX_ENTERED_LINE_LENGTH] = {0};
-
-    int read_status = CONTINUE;
-
-    while (read_status != END_OF_DATA) {
-        printf("Enter a new line or enter \'q\' to finish entering data or press \'enter\' "
-               "to print all lines:  ");
-
-        fgets(line, MAX_ENTERED_LINE_LENGTH, stdin);
-
-        pthread_mutex_lock(&mutex);
-        read_status = handle_new_line(head, line, strlen(line));
-
-        memset(line, 0, MAX_ENTERED_LINE_LENGTH);
-        pthread_mutex_unlock(&mutex);
-    }
-}
-
 int main(void) {
     int status;
     pthread_t pthread_id;
@@ -165,7 +146,22 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
-    read_lines(&head);
+    char line[MAX_ENTERED_LINE_LENGTH] = {0};
+
+    int read_status = CONTINUE;
+
+    while (read_status != END_OF_DATA) {
+        printf("Enter a new line or enter \'q\' to finish entering data or press \'enter\' "
+               "to print all lines:  ");
+
+        fgets(line, MAX_ENTERED_LINE_LENGTH, stdin);
+
+        pthread_mutex_lock(&mutex);
+        read_status = handle_new_line(&head, line, strlen(line));
+
+        memset(line, 0, MAX_ENTERED_LINE_LENGTH);
+        pthread_mutex_unlock(&mutex);
+    }
 
     status = pthread_cancel(pthread_id);
 

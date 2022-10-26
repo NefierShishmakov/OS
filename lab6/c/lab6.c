@@ -59,7 +59,6 @@ int read_lines(char lines[MAX_LINES_NUM][MAX_LINE_LENGTH], int *result_lines_num
         }
         
         remove_line_break_char(&lines[(*result_lines_num)][0]);
-        
 
         ++(*result_lines_num);
     }

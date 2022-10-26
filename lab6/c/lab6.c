@@ -8,7 +8,7 @@
 #define MAX_LINES_NUM 100
 #define MAX_LINE_LENGTH 501
 
-#define SORT_COEFFICIENT 20000
+#define SORT_COEFFICIENT 1.1
 
 #define ERROR (-1)
 #define SUCCESS 0
@@ -21,12 +21,7 @@ void handle_error(int status, char *error_reason) {
 void *routine(void *arg) {
     int line_length = strlen((char *)arg);
 
-    int usleep_status = usleep(line_length * SORT_COEFFICIENT);
-
-    if (usleep_status != SUCCESS) {
-        handle_error(usleep_status, "usleep");
-        return NULL;
-    }
+    sleep(line_length * SORT_COEFFICIENT);
 
     printf("%s", (char *)arg);
 

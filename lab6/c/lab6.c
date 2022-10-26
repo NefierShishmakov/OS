@@ -36,7 +36,7 @@ void *routine(void *arg) {
 int read_lines(char lines[MAX_LINES_NUM][MAX_LINE_LENGTH], int *result_lines_num) {
     *result_lines_num = 0;
 
-    while ((*result_lines_num) <= MAX_LINES_NUM) {
+    while ((*result_lines_num) < MAX_LINES_NUM) {
         printf("Enter the new line or press \'Enter\' to end input: ");
         
         char *fgets_status = fgets(&lines[(*result_lines_num)][0], MAX_LINE_LENGTH, stdin);

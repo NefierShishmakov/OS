@@ -141,7 +141,7 @@ int calculate_pi(double *pi, const int pthreads_num, const int steps_num) {
 }
 
 void print_result(const double *pi) {
-    printf("pi=%.9f\n", *pi);
+    printf("pi=%.18f\n", *pi);
 } 
 
 int main(int argc, char **argv) {

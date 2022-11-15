@@ -6,7 +6,7 @@
 
 #define SUCCESS 0
 
-#define SEC_TO_SLEEP 2
+#define SEC_TO_SLEEP 10
 #define TRUE 1
 
 typedef unsigned long long ull;

@@ -86,7 +86,7 @@ void *start_routine(void *arg) {
     for (int i = 1; i <= args->iter_num; ++i) {
         next_id = (id + 1) % MUTEXES_NUM;
         pthread_mutex_lock(&mutexes[next_id]);
-        printf("The %s line is printed\n", args->name);
+        printf("The %s %d line is printed\n", args->name, i);
         pthread_mutex_unlock(&mutexes[id]);
         id = next_id;
     }
@@ -119,9 +119,7 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
-    while (!mutex_is_locked) {
-        sched_yield();
-    }
+    while (!mutex_is_locked) {}
 
     start_routine(&parent);
 

@@ -71,13 +71,33 @@ int init_mutexes() {
     return SUCCESS;
 }
 
+void lock_mutex(int mutex_num)
+{
+    int status = pthread_mutex_lock(&mutexes[mutex_num]);
+
+    if (status != SUCCESS) {
+        errno = status;
+        perror("pthread_mutex_lock");
+    }
+}
+
+void unlock_mutex(int mutex_num)
+{
+    int status = pthread_mutex_unlock(&mutexes[mutex_num]);
+
+    if (status != SUCCESS) {
+        errno = status;
+        perror("pthread_mutex_unlock");
+    }
+}
+
 void *start_routine(void *arg) {
     function_args *args = (function_args *)arg;
 
     int id = args->id;
 
     if (!mutex_is_locked) {
-        pthread_mutex_lock(&mutexes[id % MUTEXES_NUM]);
+        lock_mutex(id % MUTEXES_NUM);
         mutex_is_locked = true;
     }
 
@@ -85,13 +105,13 @@ void *start_routine(void *arg) {
 
     for (int i = 1; i <= args->iter_num; ++i) {
         next_id = (id + 1) % MUTEXES_NUM;
-        pthread_mutex_lock(&mutexes[next_id]);
+        lock_mutex(next_id);
         printf("The %s %d line is printed\n", args->name, i);
-        pthread_mutex_unlock(&mutexes[id]);
+        unlock_mutex(id);
         id = next_id;
     }
 
-    pthread_mutex_unlock(&mutexes[id % MUTEXES_NUM]);
+    unlock_mutex(id % MUTEXES_NUM);
 
     return NULL;
 }
@@ -107,7 +127,7 @@ int main(void) {
     function_args child = {"child", LINES_NUM, CHILD_ID};
     function_args parent = {"parent", LINES_NUM, PARENT_ID};
 
-    pthread_mutex_lock(&mutexes[0]);
+    lock_mutex(0);
 
     status = pthread_create(&pthread_id, NULL, start_routine, &child);
 

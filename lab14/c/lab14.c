@@ -1,5 +1,4 @@
 #include <stdio.h>
-//#include <stdbool.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <errno.h>
@@ -9,8 +8,8 @@
 #define SUCCESS 0
 #define ERROR (-1)
 
-#define PARENT_ID 0
-#define CHILD_ID 2
+#define PARENT_ID 1
+#define CHILD_ID 0
 
 #define FIRST_SEM_START_VALUE 0
 #define SECOND_SEM_START_VALUE 1
@@ -18,8 +17,6 @@
 #define SEM_NUM 2
 
 sem_t semaphores[SEM_NUM];
-
-//bool mutex_is_locked = false;
 
 typedef struct function_args {
     const char *name;
@@ -81,6 +78,15 @@ int init_semaphores(int *sem_values) {
 
 void *start_routine(void *arg) {
     function_args *args = (function_args *)arg;
+    
+    int first = args->id;
+    int second = !first;
+
+    for (int i = 1; i <= args->iter_num; ++i) {
+        sem_wait(&semaphores[first]);
+        printf("The %s %d line is printed\n", args->name, i);
+        sem_post(&semaphores[second]);
+    }
 
     return NULL;
 }
@@ -106,8 +112,6 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
-    //while (!mutex_is_locked) {}
-
     start_routine(&parent);
 
     status = pthread_join(pthread_id, NULL);
@@ -126,25 +130,4 @@ int main(void) {
 
     return EXIT_SUCCESS;
 }
-
-
-/*int id = args->id;
-
-    if (!mutex_is_locked) {
-        lock_mutex(id % MUTEXES_NUM);
-        mutex_is_locked = true;
-    }
-
-    int next_id = 0;
-
-    for (int i = 1; i <= args->iter_num; ++i) {
-        next_id = (id + 1) % MUTEXES_NUM;
-        lock_mutex(next_id);
-        printf("The %s %d line is printed\n", args->name, i);
-        unlock_mutex(id);
-        id = next_id;
-    }
-
-    unlock_mutex(id % MUTEXES_NUM);
-    */
 

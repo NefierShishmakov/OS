@@ -2,5 +2,5 @@
 
 for ((c=$1; c<=$2; c++))
 do
-    rm -r lab$c
+    rm -r -i lab$c
 done

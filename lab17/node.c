@@ -4,7 +4,9 @@ pthread_mutex_t mutex;
 
 Node *create_node(char *line, int chars_num_to_copy) {
     Node *new_node = (Node *)malloc(sizeof(Node));
+    new_node->line = (char *)malloc((chars_num_to_copy + 1) * sizeof(char));
     strncpy(new_node->line, line, chars_num_to_copy);
+    new_node->line[chars_num_to_copy] = '\0';
     new_node->next = NULL;
 
     return new_node;
@@ -23,7 +25,8 @@ void free_list(Node *head) {
     while (head != NULL) {
         Node *to_del = head;
         head = head->next;
-
+        
+        free(to_del->line);
         free(to_del);
     }
 }
@@ -56,7 +59,10 @@ void bubbleSort(Node **head) {
 
             while (left_ptr->next != right_ptr) {
                 if (strcmp(left_ptr->line, left_ptr->next->line) > 0) {
-                    swap(left_ptr->line, left_ptr->next->line);
+                    char *tmp = left_ptr->line;
+                    left_ptr->line = left_ptr->next->line;
+                    left_ptr->next->line = tmp;
+
                     is_swapped = true;
                 }
 

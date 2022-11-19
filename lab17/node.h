@@ -13,7 +13,7 @@
 #define FAILURE (-1)
 
 typedef struct Node {
-    char line[LINE_LENGTH];
+    char *line;
     struct Node *next;
 } Node;
 

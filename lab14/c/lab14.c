@@ -11,6 +11,10 @@
 #define PARENT_ID 1
 #define CHILD_ID 0
 
+#define DO_NO_EXECUTE 0
+
+#define NOT_PSHARED_SEM 0
+
 #define FIRST_SEM_START_VALUE 0
 #define SECOND_SEM_START_VALUE 1
 
@@ -22,6 +26,7 @@ typedef struct function_args {
     const char *name;
     int iter_num;
     int id;
+    pthread_t other_pthread_id;
 } function_args;
 
 void handle_error(int status, const char *error_reason) {
@@ -30,7 +35,7 @@ void handle_error(int status, const char *error_reason) {
 }
 
 int init_semaphore(int sem_num, int sem_start_value) {
-    int status = sem_init(&semaphores[sem_num], 0, sem_start_value);
+    int status = sem_init(&semaphores[sem_num], NOT_PSHARED_SEM, sem_start_value);
 
     if (status != SUCCESS) {
         handle_error(status, "sem_init");
@@ -83,15 +88,33 @@ void *start_routine(void *arg) {
     int second = !first;
 
     for (int i = 1; i <= args->iter_num; ++i) {
-        sem_wait(&semaphores[first]);
+        int wait_status = sem_wait(&semaphores[first]);
+
+        if (wait_status != SUCCESS) {
+            perror("sem_wait");
+            pthread_cancel(args->other_pthread_id);
+            return NULL;
+        }
+
         printf("The %s %d line is printed\n", args->name, i);
-        sem_post(&semaphores[second]);
+        int post_status = sem_post(&semaphores[second]);
+
+        if (post_status != SUCCESS) {
+            perror("sem_post");
+            pthread_cancel(args->other_pthread_id);
+            return NULL;
+        }
     }
 
     return NULL;
 }
 
+void destroy_semaphores_on_cancel() {
+    destroy_semaphores(SEM_NUM - 1);
+}
+
 int main(void) {
+    pthread_cleanup_push(&destroy_semaphores_on_cancel, NULL);
     pthread_t pthread_id;
     int sem_values[SEM_NUM] = {FIRST_SEM_START_VALUE, SECOND_SEM_START_VALUE};
 
@@ -101,8 +124,10 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
-    function_args child = {"child", LINES_NUM, CHILD_ID};
-    function_args parent = {"parent", LINES_NUM, PARENT_ID};
+    pthread_t main_pthread_id = pthread_self();
+
+    function_args child = {"child", LINES_NUM, CHILD_ID, main_pthread_id};
+    function_args parent = {"parent", LINES_NUM, PARENT_ID, pthread_id};
 
     status = pthread_create(&pthread_id, NULL, start_routine, &child);
 
@@ -127,7 +152,8 @@ int main(void) {
     if (status != SUCCESS) {
         return EXIT_FAILURE;
     }
-
+    
+    pthread_cleanup_pop(DO_NO_EXECUTE);
     return EXIT_SUCCESS;
 }
 

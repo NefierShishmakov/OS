@@ -44,7 +44,7 @@ int main(void) {
     }
 
     print_lines(&parent);
-    
+   
     pthread_exit(NULL);
 }
 

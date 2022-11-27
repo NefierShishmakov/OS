@@ -23,7 +23,6 @@ void *print_lines(void *arg) {
 
 int main(void) {
     pthread_t pthread_id;
-
     static function_args child = {"child", LINES_NUM};
     static function_args parent = {"parent", LINES_NUM};
     

@@ -3,4 +3,4 @@ project(lab31 C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(lab31 h/hello.h c/main.c c/hello.c)
+add_executable(lab31 c/lab31.c)

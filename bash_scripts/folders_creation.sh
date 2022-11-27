@@ -10,6 +10,3 @@ do
         return 0;
      }" > lab$c/c/lab$c.c
 done
-
-
-

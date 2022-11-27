@@ -2,9 +2,9 @@
 
 for (( c=$1; c<=$2; c++))
 do
-    mkdir lab$c && mkdir lab$c/c
+    mkdir lab$c lab$c/c lab$c/info lab$c/executables
     touch lab$c/c/lab$c.c
-    touch lab$c/explanation.txt
+    touch lab$c/info/explanation.txt
     echo 
     "int main(void) {
         return 0;

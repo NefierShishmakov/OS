@@ -1,0 +1,8 @@
+/lab31/.idea
+/lab32/.idea
+/lab31/*.txt
+/lab32/*.txt
+/lab31/cmake-build-debug
+/lab32/cmake-build-debug
+!/lab31/info
+!/lab32/info

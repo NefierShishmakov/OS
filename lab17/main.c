@@ -68,12 +68,13 @@ void read_lines(Node **head) {
     char line[MAX_ENTERED_LINE_LENGTH] = {0};
 
     int read_status = CONTINUE;
+    printf("Enter a new line or enter \'q\' to finish entering data or press \'enter\' "
+               "to print all lines:\n");
 
     while (read_status != END_OF_DATA) {
-        printf("Enter a new line or enter \'q\' to finish entering data or press \'enter\' "
-               "to print all lines:  ");
-
-        fgets(line, MAX_ENTERED_LINE_LENGTH, stdin);
+        if (fgets(line, MAX_ENTERED_LINE_LENGTH, stdin) == NULL) {
+            break;
+        }
 
         read_status = handle_new_line(head, line, strlen(line));
 

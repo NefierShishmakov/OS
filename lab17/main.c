@@ -28,7 +28,7 @@ void *sort_list(void *arg) {
 int get_operation(char *line, size_t len) {
     if (line[0] == '\n') {
         return PRINT_LIST;
-    } else if (len == 2 && line[0] == END_INPUT_SYM) {
+    } else if ((len == 2 && line[0] == END_INPUT_SYM) || len == 0) {
         return END_INPUT;
     }
 
@@ -73,7 +73,8 @@ void read_lines(Node **head) {
 
     while (read_status != END_OF_DATA) {
         if (fgets(line, MAX_ENTERED_LINE_LENGTH, stdin) == NULL) {
-            break;
+            sleep(5);
+            print_list(*head);
         }
 
         read_status = handle_new_line(head, line, strlen(line));

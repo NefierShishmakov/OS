@@ -72,10 +72,7 @@ void read_lines(Node **head) {
                "to print all lines:\n");
 
     while (read_status != END_OF_DATA) {
-        if (fgets(line, MAX_ENTERED_LINE_LENGTH, stdin) == NULL) {
-            sleep(5);
-            print_list(*head);
-        }
+        fgets(line, MAX_ENTERED_LINE_LENGTH, stdin);
 
         read_status = handle_new_line(head, line, strlen(line));
 

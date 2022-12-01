@@ -53,9 +53,7 @@
 			"sourceIndexes" : 
 			[
 				0,
-				3,
-				5,
-				7
+				3
 			]
 		}
 	],
@@ -89,9 +87,7 @@
 			"sourceIndexes" : 
 			[
 				0,
-				3,
-				5,
-				7
+				3
 			]
 		},
 		{
@@ -99,9 +95,7 @@
 			"sourceIndexes" : 
 			[
 				1,
-				2,
-				4,
-				6
+				2
 			]
 		}
 	],
@@ -110,45 +104,23 @@
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "cpp/main.cpp",
+			"path" : "main.cpp",
 			"sourceGroupIndex" : 0
 		},
 		{
 			"backtrace" : 1,
-			"path" : "hpp/constants.h",
+			"path" : "constants.h",
 			"sourceGroupIndex" : 1
 		},
 		{
 			"backtrace" : 1,
-			"path" : "hpp/utils.h",
+			"path" : "proxy.h",
 			"sourceGroupIndex" : 1
 		},
 		{
 			"backtrace" : 1,
 			"compileGroupIndex" : 0,
-			"path" : "cpp/utils.cpp",
-			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 1,
-			"path" : "hpp/proxy_utils.h",
-			"sourceGroupIndex" : 1
-		},
-		{
-			"backtrace" : 1,
-			"compileGroupIndex" : 0,
-			"path" : "cpp/proxy_utils.cpp",
-			"sourceGroupIndex" : 0
-		},
-		{
-			"backtrace" : 1,
-			"path" : "hpp/proxy.h",
-			"sourceGroupIndex" : 1
-		},
-		{
-			"backtrace" : 1,
-			"compileGroupIndex" : 0,
-			"path" : "cpp/proxy.cpp",
+			"path" : "proxy.cpp",
 			"sourceGroupIndex" : 0
 		}
 	],

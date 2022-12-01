@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <cstring>
 #include <iostream>
-#include "../hpp/constants.h"
+#include "constants.h"
 
 namespace ProxySpace
 {

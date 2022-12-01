@@ -1,5 +1,5 @@
 #include <pthread.h>
-#include "../hpp/proxy.h"
+#include "proxy.h"
 
 int main() {
     ProxySpace::Proxy proxy = ProxySpace::Proxy(Constants::PROXY_PORT_NUMBER, Constants::DEFAULT_PROTOCOL);

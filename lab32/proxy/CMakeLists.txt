@@ -3,4 +3,4 @@ project(lab32)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(lab32 cpp/main.cpp hpp/constants.h hpp/proxy.h cpp/proxy.cpp)
+add_executable(lab32 main.cpp constants.h proxy.h proxy.cpp)

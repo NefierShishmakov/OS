@@ -1,4 +1,4 @@
-#include "../hpp/proxy.h"
+#include "proxy.h"
 
 namespace ProxySpace
 {

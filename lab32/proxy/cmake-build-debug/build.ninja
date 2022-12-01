@@ -49,29 +49,17 @@ cmake_ninja_workdir = /home/mrx/Programming/C/OS/lab32/proxy/cmake-build-debug/
 
 build cmake_object_order_depends_target_lab32: phony || CMakeFiles/lab32.dir
 
-build CMakeFiles/lab32.dir/cpp/main.cpp.o: CXX_COMPILER__lab32_Debug /home/mrx/Programming/C/OS/lab32/proxy/cpp/main.cpp || cmake_object_order_depends_target_lab32
-  DEP_FILE = CMakeFiles/lab32.dir/cpp/main.cpp.o.d
+build CMakeFiles/lab32.dir/main.cpp.o: CXX_COMPILER__lab32_Debug /home/mrx/Programming/C/OS/lab32/proxy/main.cpp || cmake_object_order_depends_target_lab32
+  DEP_FILE = CMakeFiles/lab32.dir/main.cpp.o.d
   FLAGS = -g -fdiagnostics-color=always -std=gnu++20
   OBJECT_DIR = CMakeFiles/lab32.dir
-  OBJECT_FILE_DIR = CMakeFiles/lab32.dir/cpp
+  OBJECT_FILE_DIR = CMakeFiles/lab32.dir
 
-build CMakeFiles/lab32.dir/cpp/utils.cpp.o: CXX_COMPILER__lab32_Debug /home/mrx/Programming/C/OS/lab32/proxy/cpp/utils.cpp || cmake_object_order_depends_target_lab32
-  DEP_FILE = CMakeFiles/lab32.dir/cpp/utils.cpp.o.d
+build CMakeFiles/lab32.dir/proxy.cpp.o: CXX_COMPILER__lab32_Debug /home/mrx/Programming/C/OS/lab32/proxy/proxy.cpp || cmake_object_order_depends_target_lab32
+  DEP_FILE = CMakeFiles/lab32.dir/proxy.cpp.o.d
   FLAGS = -g -fdiagnostics-color=always -std=gnu++20
   OBJECT_DIR = CMakeFiles/lab32.dir
-  OBJECT_FILE_DIR = CMakeFiles/lab32.dir/cpp
-
-build CMakeFiles/lab32.dir/cpp/proxy_utils.cpp.o: CXX_COMPILER__lab32_Debug /home/mrx/Programming/C/OS/lab32/proxy/cpp/proxy_utils.cpp || cmake_object_order_depends_target_lab32
-  DEP_FILE = CMakeFiles/lab32.dir/cpp/proxy_utils.cpp.o.d
-  FLAGS = -g -fdiagnostics-color=always -std=gnu++20
-  OBJECT_DIR = CMakeFiles/lab32.dir
-  OBJECT_FILE_DIR = CMakeFiles/lab32.dir/cpp
-
-build CMakeFiles/lab32.dir/cpp/proxy.cpp.o: CXX_COMPILER__lab32_Debug /home/mrx/Programming/C/OS/lab32/proxy/cpp/proxy.cpp || cmake_object_order_depends_target_lab32
-  DEP_FILE = CMakeFiles/lab32.dir/cpp/proxy.cpp.o.d
-  FLAGS = -g -fdiagnostics-color=always -std=gnu++20
-  OBJECT_DIR = CMakeFiles/lab32.dir
-  OBJECT_FILE_DIR = CMakeFiles/lab32.dir/cpp
+  OBJECT_FILE_DIR = CMakeFiles/lab32.dir
 
 
 # =============================================================================
@@ -81,7 +69,7 @@ build CMakeFiles/lab32.dir/cpp/proxy.cpp.o: CXX_COMPILER__lab32_Debug /home/mrx/
 #############################################
 # Link the executable lab32
 
-build lab32: CXX_EXECUTABLE_LINKER__lab32_Debug CMakeFiles/lab32.dir/cpp/main.cpp.o CMakeFiles/lab32.dir/cpp/utils.cpp.o CMakeFiles/lab32.dir/cpp/proxy_utils.cpp.o CMakeFiles/lab32.dir/cpp/proxy.cpp.o
+build lab32: CXX_EXECUTABLE_LINKER__lab32_Debug CMakeFiles/lab32.dir/main.cpp.o CMakeFiles/lab32.dir/proxy.cpp.o
   FLAGS = -g
   OBJECT_DIR = CMakeFiles/lab32.dir
   POST_BUILD = :

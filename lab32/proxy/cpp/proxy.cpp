@@ -1,65 +1,103 @@
-#include <iostream>
-#include <pthread.h>
-#include "../hpp/proxy_utils.h"
-#include "../hpp/utils.h"
-#include <arpa/inet.h>
+#include "../hpp/proxy.h"
 
-
-
-int main(int argc, char **argv) {
-    if ((argc - 1) != Constants::PROXY_ARGC_NUM) {
-        std::cerr << "Usage: arg1 - proxy port number" << std::endl;
-        return EXIT_FAILURE;
+namespace ProxySpace
+{
+    Proxy::Proxy(int proxy_port, int backlog_size)
+    {
+        this->proxy_port = proxy_port;
+        this->backlog_size = backlog_size;
+        this->init_proxy_addr();
     }
 
-    int proxy_port_number = std::stoi(argv[Constants::PROXY_ARGC_INDEX]);
-    int proxy_fd = ProxyUtils::open_and_listen_proxy_fd(proxy_port_number);
-
-    if (proxy_fd == Constants::ERROR) {
-        return EXIT_FAILURE;
+    void Proxy::init_proxy_addr()
+    {
+        bzero((char *)&this->proxy_addr, sizeof(this->proxy_addr));
+        proxy_addr.sin_family = AF_INET;
+        proxy_addr.sin_addr.s_addr = INADDR_ANY;
+        proxy_addr.sin_port = htons(this->proxy_port);
     }
 
-    while (true) {
-        struct sockaddr_in client_addr;
-        int clilen = sizeof(client_addr);
+    int Proxy::open_and_listen_fd()
+    {
+        this->proxy_fd = socket(AF_INET, SOCK_STREAM, Constants::DEFAULT_PROTOCOL);
 
-        int client_fd = accept(proxy_fd, (struct sockaddr *)&client_addr, (socklen_t *)&clilen);
+        if (this->proxy_fd == Constants::ERROR) {
+            perror("socket");
+            return Constants::ERROR;
+        }
 
-        if (client_fd == Constants::ERROR) {
-            perror("accept");
-            int close_status = close(client_fd);
+        int optval = 1;
 
-            if (close_status == Constants::ERROR) {
-                perror("\'close\' method of socket client");
+        int setsockopt_status = setsockopt(proxy_fd, SOL_SOCKET, SO_REUSEADDR, (const void *)&optval, sizeof(optval));
+
+        if (setsockopt_status == Constants::ERROR) {
+            perror("setsockopt");
+            return Constants::ERROR;
+        }
+
+        int bind_status = bind(this->proxy_fd, (struct sockaddr *)&this->proxy_addr,
+                sizeof(this->proxy_addr));
+
+        if (bind_status == Constants::ERROR) {
+            perror("bind");
+            return Constants::ERROR;
+        }
+
+        int listen_status = listen(this->proxy_fd, backlog_size);
+
+        if (listen_status == Constants::ERROR) {
+            perror("listen");
+            return Constants::ERROR;
+        }
+
+        return Constants::SUCCESS;
+    }
+
+    void Proxy::handle_clients()
+    {
+        while (true)
+        {
+            struct sockaddr_in client_addr;
+            int clilen = sizeof(client_addr);
+
+            int client_fd = accept(this->proxy_fd, (struct sockaddr *) &client_addr, (socklen_t *) &clilen);
+
+            if (client_fd == Constants::ERROR) {
+                perror("accept");
+                int close_status = close(client_fd);
+
+                if (close_status == Constants::ERROR) {
+                    perror("\'close\' method of socket client");
+                }
             }
+
+            char *client_ip = inet_ntoa(client_addr.sin_addr);
+
+            std::cout << "New client with ip - " << "(" << client_ip << ")" << "has been connected" << std::endl;
+
+            char buffer[257] = {0};
+
+            std::cout << "Server started receiving data from the client" << std::endl;
+            int read_status = read(client_fd, buffer, 256);
+            std::cout << "Server ended receiving data from the client" << std::endl;
+
+            if (read_status == Constants::ERROR) {
+                perror("read");
+            }
+
+            std::cout << "The data received from the client" << std::endl;
+            std::cout << buffer << std::endl;
+
+            close(client_fd);
         }
-
-        char *client_ip = inet_ntoa(client_addr.sin_addr);
-
-        std::cout << "New client with ip - " << "(" << client_ip << ")" << "has been connected" << std::endl;
-
-        char buffer[257] = {0};
-
-        std::cout << "Server started receiving data from the client" << std::endl;
-        int read_status = read(client_fd, buffer, 256);
-        std::cout << "Server ended receiving data from the client" << std::endl;
-
-        if (read_status == Constants::ERROR) {
-            perror("read");
-        }
-
-        std::cout << "The data received from the client" << std::endl;
-        std::cout << buffer << std::endl;
-
-        close(client_fd);
     }
 
-    int close_proxy_fd_status = close(proxy_fd);
+    Proxy::~Proxy()
+    {
+        int close_status = close(this->proxy_fd);
 
-    if (close_proxy_fd_status == Constants::ERROR) {
-        perror("close");
-        return EXIT_FAILURE;
+        if (close_status == Constants::ERROR) {
+            perror("close");
+        }
     }
-
-    return EXIT_SUCCESS;
 }

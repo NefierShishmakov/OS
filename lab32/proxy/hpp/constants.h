@@ -3,11 +3,12 @@
 
 namespace Constants
 {
-    const int PROXY_ARGC_NUM = 1;
-    const int PROXY_ARGC_INDEX = 1;
-    const int DEFAULT_PROTOCOL = 0;
-    const int ERROR = -1;
+    const int PROXY_PORT_NUMBER = 8080;
     const int DEFAULT_BACKLOG_SIZE = 10;
+    const int DEFAULT_PROTOCOL = 0;
+
+    const int ERROR = -1;
+    const int SUCCESS = 0;
 }
 
 #endif

@@ -7,6 +7,7 @@
 
 #define BUFSIZE 4097
 #define ERROR_BUFSIZE 1025
+#define SEPARATOR "/"
 #define WAIT_SEC_FOR_FD 1
 #define WAIT_SEC_FOR_THREAD_RESOURCES 5
 

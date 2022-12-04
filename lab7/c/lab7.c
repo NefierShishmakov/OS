@@ -39,9 +39,15 @@ void *copy_file(void *arg) {
     strcpy(strcpy(src_filepath, srcdir_path), relative_filepath);
     strcpy(strcpy(dest_filepath, destdir_path), relative_filepath);
 
+    free(relative_filepath);
+
     char buffer[BUFSIZE];
     int src_fd;
     int dest_fd;
+
+    // TODO
+    // Think how to read and write file 
+    // Watch the last link in browser
 
 
 
@@ -49,7 +55,11 @@ void *copy_file(void *arg) {
 }
 
 void *copy_dir(void *arg) {
-    char *dirname = (char *)arg;
+    char *dirpath_arg = (char *)arg;
+
+    char dirname[strlen(dirpath_arg) + 1];
+    strcpy(dirname, dirpath_arg);
+    free(dirpath_arg);
 
     char new_src_dir_path[get_length_of_new_path(srcdir_path, dirname)];
     strcat(strcpy(new_src_dir_path, srcdir_path), dirname);
@@ -89,8 +99,10 @@ void *copy_dir(void *arg) {
             break;
         }
         //strlen(dirname) + strlen(new_src_direntp->d_name)
-        char relative_path[get_length_of_new_path(dirname, new_src_direntp->d_name) + 1];
-        strcat(strcat(strcpy(relative_path, dirname), "/"), new_src_direntp->d_name);
+        char *relative_path = (char *)malloc((get_length_of_new_path(dirname, 
+                        new_src_direntp->d_name) + 1) * sizeof(char));
+
+        strcat(strcat(strcpy(relative_path, dirname), SEPARATOR), new_src_direntp->d_name);
 
         if ((buf.st_mode & S_IFMT) == S_IFREG) {
             try_to_create_thread(copy_file, (void *)&relative_path);
@@ -106,6 +118,9 @@ void *copy_dir(void *arg) {
             }
 
             try_to_create_thread(copy_dir, (void *)&relative_path);
+        }
+        else {
+            free(relative_path);
         }
     }
     
@@ -130,10 +145,9 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    char *initial_dir = "";
     prepare_dirs(srcdir_path, destdir_path); 
 
-    copy_dir((void *)initial_dir);
+    copy_dir((void *)strdup(""));
 
     pthread_exit(NULL);
 }

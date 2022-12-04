@@ -49,7 +49,13 @@ void *copy_file(void *arg) {
     // Think how to read and write file 
     // Watch the last link in browser
 
+    // Examples of opening src_fd and dest_fd
+    //src_fd = open(src_filepath, O_RDONLY, 0700);
+    //dest_fd = open(dest_filepath, O_WRONLY | O_CREAT, 0700);
+    
 
+    close(src_fd);
+    close(dest_fd);
 
     return NULL;
 }

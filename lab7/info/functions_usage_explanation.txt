@@ -19,6 +19,42 @@ char *strcat(char *restrict dest, const char *restrict src);
     Return value:
         Return a pointer to the resulting string dest.
 
+DIR *opendir(const char *name);
+    Headers:
+        #include <sys/types.h>
+        #include <dirent.h>
+    Description:
+        The opendir() function opens a directory stream corresponding to
+        the directory name, and returns a pointer to the directory
+        stream.  The stream is positioned at the first entry in the
+        directory.
+    Return value:
+        The opendir() function return a pointer to the
+        directory stream.  On error, NULL is returned, and errno is set
+        to indicate the error.
+    ERRORS:
+        EACCES - отказано в доступе
+        EBADF - fd невалидный файловый дескриптор открытый для чтения
+        EMFILE - Достигнут предел количества открытых файловых дескрипторов для каждого процесса.
+        ENFILE - Достигнут общесистемный лимит на общее количество открытых файлов.
+        ENOENT - директория не существует, или имя пустая строка.
+        ENOMEM - недостаточно памяти, чтобы выполнить операцию.
+        ENOTDIR - name is not a directory
 
+int stat(const char *restrict pathname, struct stat *restrict statbuf)
+    Headers:
+        #include <sys/stat.h>
+    Description:
+        Эти функция возвращают информацию о файле в буфере, на который указывает statbuf.
+        Разрешение на выполнение требуется для всех каталогов в пути, которые ведут к файлу.
+        В структуре statbuf, нужно поле st_mode.
+        К этому полю нужно применить маску S_IFMT, чтобы получить тип файла.
+        Пример:
+            if ((st_mode & S_IFMT) == S_IFREG), где S_IFREG - регулярный файл.
+    Return value:
+        On success, zero is returned.  On error, -1 is returned, and
+        errno is set to indicate the error.
+    ERRORS:
+        Watch before seminar;
 
 

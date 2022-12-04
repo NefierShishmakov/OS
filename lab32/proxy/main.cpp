@@ -1,8 +1,7 @@
-#include <pthread.h>
 #include "proxy.h"
 
 int main() {
-    ProxySpace::Proxy proxy = ProxySpace::Proxy(Constants::PROXY_PORT_NUMBER, Constants::DEFAULT_PROTOCOL);
+    ProxySpace::Proxy proxy = ProxySpace::Proxy(Constants::PROXY_PORT_NUMBER, Constants::DEFAULT_BACKLOG_SIZE);
 
     int open_and_listen_fd_status = proxy.open_and_listen_fd();
 

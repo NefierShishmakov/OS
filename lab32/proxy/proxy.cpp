@@ -60,6 +60,8 @@ namespace ProxySpace
             struct sockaddr_in client_addr;
             int clilen = sizeof(client_addr);
 
+            std::cout << "Server is waiting for new connections" << std::endl;
+
             int client_fd = accept(this->proxy_fd, (struct sockaddr *) &client_addr, (socklen_t *) &clilen);
 
             if (client_fd == Constants::ERROR) {

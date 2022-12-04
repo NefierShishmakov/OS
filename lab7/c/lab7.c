@@ -31,13 +31,27 @@ void try_to_create_thread(void *(*start_routine)(void *), void *arg) {
 }
 
 void *copy_file(void *arg) {
+    char *relative_filepath = (char *)arg;
+
+    char src_filepath[get_length_of_new_path(srcdir_path, relative_filepath)];
+    char dest_filepath[get_length_of_new_path(destdir_path, relative_filepath)];
+
+    strcpy(strcpy(src_filepath, srcdir_path), relative_filepath);
+    strcpy(strcpy(dest_filepath, destdir_path), relative_filepath);
+
+    char buffer[BUFSIZE];
+    int src_fd;
+    int dest_fd;
+
+
+
     return NULL;
 }
 
 void *copy_dir(void *arg) {
     char *dirname = (char *)arg;
 
-    char new_src_dir_path[get_size_of_new_dir_path(srcdir_path, dirname)];
+    char new_src_dir_path[get_length_of_new_path(srcdir_path, dirname)];
     strcat(strcpy(new_src_dir_path, srcdir_path), dirname);
     
     DIR *new_srcpdir;
@@ -63,27 +77,35 @@ void *copy_dir(void *arg) {
         }
         
         // This is a path of file in src directory
-        char path[strlen(new_src_dir_path) + strlen(new_src_direntp->d_name) + 1];
-        strcat(strcpy(path, new_src_dir_path), new_src_direntp->d_name);
+        //strlen(new_src_dir_path) + strlen(new_src_direntp->d_name) + 1
+        char path_src[get_length_of_new_path(new_src_dir_path, new_src_direntp->d_name)];
+        strcat(strcpy(path_src, new_src_dir_path), new_src_direntp->d_name);
 
         struct stat buf;
-        int status = stat(path, &buf);
+        int status = stat(path_src, &buf);
 
         if (status != SUCCESS) {
             perror("stat");
             break;
         }
-
-        char relative_path[strlen(dirname) + strlen(new_src_direntp->d_name) + 2];
+        //strlen(dirname) + strlen(new_src_direntp->d_name)
+        char relative_path[get_length_of_new_path(dirname, new_src_direntp->d_name) + 1];
         strcat(strcat(strcpy(relative_path, dirname), "/"), new_src_direntp->d_name);
 
-        switch ((buf.st_mode & S_IFMT)) {
-            case S_IFREG:
-                try_to_create_thread(copy_file, (void *)relative_path);
+        if ((buf.st_mode & S_IFMT) == S_IFREG) {
+            try_to_create_thread(copy_file, (void *)&relative_path);
+        }
+        else if ((buf.st_mode & S_IFMT) == S_IFDIR) {
+            char dest_path[get_length_of_new_path(destdir_path, relative_path)];
+            strcpy(strcpy(dest_path, destdir_path), relative_path);
+
+            status = try_to_mkdir(dest_path);
+
+            if (status != SUCCESS) {
                 break;
-            case S_IFDIR:
-                
-                break;
+            }
+
+            try_to_create_thread(copy_dir, (void *)&relative_path);
         }
     }
     
@@ -113,6 +135,6 @@ int main(int argc, char **argv) {
 
     copy_dir((void *)initial_dir);
 
-    return EXIT_SUCCESS;
+    pthread_exit(NULL);
 }
 

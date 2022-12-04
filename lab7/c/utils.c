@@ -1,14 +1,14 @@
 #include "utils.h"
 
-int try_to_mkdir(const char *destdir) {
-    int status = mkdir(destdir, 0700);
+int try_to_mkdir(const char *dir) {
+    int status = mkdir(dir, 0700);
 
     if (status != SUCCESS) {
         if (errno == EEXIST) {
-            status = access(destdir, W_OK | X_OK);
+            status = access(dir, W_OK | X_OK);
 
             if (status != SUCCESS) {
-                fprintf(stderr, "%s is exists but not accessible\n", destdir);
+                fprintf(stderr, "%s is exists but not accessible\n", dir);
                 return ERROR;
             }
         }
@@ -34,6 +34,6 @@ void prepare_dirs(char *srcdir, char *destdir) {
     }
 }
 
-size_t get_size_of_new_dir_path(char *prev_dir_path, char *dir_to_add) {
-    return (strlen(prev_dir_path) + strlen(dir_to_add) + 1);
+size_t get_length_of_new_path(const char *first_path, const char *second_path) {
+    return (strlen(first_path) + strlen(second_path) + 1);
 }

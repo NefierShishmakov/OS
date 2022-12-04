@@ -8,7 +8,7 @@ int try_to_mkdir(const char *srcdir) {
             status = access(srcdir, W_OK | X_OK);
 
             if (status != SUCCESS) {
-                perror("access");
+                fprintf(stderr, "%s is exists but not accessible\n", srcdir);
                 return ERROR;
             }
         }

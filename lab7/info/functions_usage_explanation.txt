@@ -1,0 +1,24 @@
+char *strcpy(char *restrict dest, const char *src);
+    Headers:
+        #include <string.h>
+    Description: 
+        The strcpy() function copies the string pointed to by src,
+        including the terminating null byte ('\0'), to the buffer pointed
+        to by dest.
+    Return value:
+        The strcpy() and strncpy() functions return a pointer to the
+        destination string dest
+
+char *strcat(char *restrict dest, const char *restrict src);
+    Headers:
+        #include <string.h>
+    Description:
+        The  strcat()  function  appends the src string to the dest string, 
+        overwriting the terminating null byte ('\0') at the end of
+        dest, and then adds a terminating null byte.
+    Return value:
+        Return a pointer to the resulting string dest.
+
+
+
+

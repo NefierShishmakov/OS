@@ -1,0 +1,11 @@
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
+#define DEFAULT_ARGC_NUM 2
+#define SOURCE_TREE_FULL_PATH_ARGC_IDX 1
+#define TARGET_TREE_FULL_PATH_ARGC_IDX 2
+#define BUFSIZE 4096
+#define SUCCESS 0
+#define ERROR (-1)
+
+#endif

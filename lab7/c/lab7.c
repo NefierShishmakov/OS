@@ -14,6 +14,22 @@
 char *srcdir_path;
 char *destdir_path;
 
+void try_to_create_thread(void *(*start_routine)(void *), void *arg) {
+    pthread_t pid;
+    int status;
+
+    do {
+        status = pthread_create(&pid, NULL, start_routine, arg);
+
+        if (status == EAGAIN) {
+            sleep(WAIT_SEC_FOR_THREAD_RESOURCES);
+        }
+
+    } while (status != SUCCESS);
+
+    pthread_detach(pid);
+}
+
 void *copy_file(void *arg) {
     return NULL;
 }
@@ -22,10 +38,7 @@ void *copy_dir(void *arg) {
     char *dirname = (char *)arg;
 
     char new_src_dir_path[get_size_of_new_dir_path(srcdir_path, dirname)];
-    char new_dest_dir_path[get_size_of_new_dir_path(destdir_path, dirname)];
-
-    strcat(strcat(strcpy(new_src_dir_path, srcdir_path), "/"), dirname);
-    strcat(strcat(strcpy(new_dest_dir_path, destdir_path), "/"), dirname);
+    strcat(strcpy(new_src_dir_path, srcdir_path), dirname);
     
     DIR *new_srcpdir;
     struct dirent *new_src_direntp;
@@ -49,12 +62,36 @@ void *copy_dir(void *arg) {
             continue;
         }
         
-        struct stat *buf;
-        stat((const char *)&new_src_dir_path, buf);
+        // This is a path of file in src directory
+        char path[strlen(new_src_dir_path) + strlen(new_src_direntp->d_name) + 1];
+        strcat(strcpy(path, new_src_dir_path), new_src_direntp->d_name);
 
+        struct stat buf;
+        int status = stat(path, &buf);
 
+        if (status != SUCCESS) {
+            perror("stat");
+            break;
+        }
+
+        char relative_path[strlen(dirname) + strlen(new_src_direntp->d_name) + 2];
+        strcat(strcat(strcpy(relative_path, dirname), "/"), new_src_direntp->d_name);
+
+        switch ((buf.st_mode & S_IFMT)) {
+            case S_IFREG:
+                try_to_create_thread(copy_file, (void *)relative_path);
+                break;
+            case S_IFDIR:
+                
+                break;
+        }
     }
     
+    int close_dir_status = closedir(new_srcpdir);
+    if (close_dir_status != SUCCESS) {
+        perror("closedir");
+    }
+
     return NULL;
 }
 

@@ -32,19 +32,15 @@ void try_to_create_thread(void *(*start_routine)(void *), void *arg) {
 }
 
 void *copy_file(void *arg) {
-    char *relative_filepath = (char *)arg;
+    char src_filepath[get_length_of_new_path(srcdir_path, arg, true)];
+    char dest_filepath[get_length_of_new_path(destdir_path, arg, true)];
 
-    char src_filepath[get_length_of_new_path(srcdir_path, relative_filepath, true)];
-    char dest_filepath[get_length_of_new_path(destdir_path, relative_filepath, true)];
-
-    strcat(strcat(strcpy(src_filepath, srcdir_path), SEPARATOR), relative_filepath);
-    strcat(strcat(strcpy(dest_filepath, destdir_path), SEPARATOR), relative_filepath);
-
-    free(relative_filepath);
+    strcat(strcat(strcpy(src_filepath, srcdir_path), SEPARATOR), arg);
+    strcat(strcat(strcpy(dest_filepath, destdir_path), SEPARATOR), arg);
+    free(arg);
 
     int src_fd;
     int dest_fd;
-    
     src_fd = try_to_open_file(src_filepath, O_RDONLY, 0);
 
     if (src_fd == ERROR) {
@@ -87,17 +83,15 @@ void *copy_file(void *arg) {
 }
 
 void *copy_dir(void *arg) {
-    char *dirpath_arg = (char *)arg;
-
-    char dirname[strlen(dirpath_arg) + 1];
-    strcpy(dirname, dirpath_arg);
-    free(dirpath_arg);
+    char dirname[strlen(arg) + 1];
+    strcpy(dirname, arg);
 
     char new_src_dir_path[get_length_of_new_path(srcdir_path, dirname, true)];
     strcat(strcat(strcpy(new_src_dir_path, srcdir_path), SEPARATOR), dirname);
+    free(arg);
     
     DIR *new_srcpdir = NULL;
-
+    
     int status = try_to_open_dir(&new_srcpdir, new_src_dir_path);
 
     if (status == ERROR) {
@@ -131,7 +125,7 @@ void *copy_dir(void *arg) {
         strcat(strcat(strcpy(relative_path, dirname), new_src_direntp->d_name), SEPARATOR);
 
         if ((buf.st_mode & S_IFMT) == S_IFREG) {
-            try_to_create_thread(copy_file, (void *)&relative_path);
+            try_to_create_thread(copy_file, (void *)relative_path);
         }
         else if ((buf.st_mode & S_IFMT) == S_IFDIR) {
             char dest_path[get_length_of_new_path(destdir_path, relative_path, true)];
@@ -140,10 +134,11 @@ void *copy_dir(void *arg) {
             status = try_to_mkdir(dest_path);
 
             if (status != SUCCESS) {
+                free(relative_path);
                 break;
             }
 
-            try_to_create_thread(copy_dir, (void *)&relative_path);
+            try_to_create_thread(copy_dir, (void *)relative_path);
         }
         else {
             free(relative_path);
@@ -173,7 +168,7 @@ int main(int argc, char **argv) {
 
     prepare_paths(srcdir_path, destdir_path);
 
-    copy_dir((void *)strdup(INITIAL_VALUE));
+    copy_dir(strdup(""));
 
     pthread_exit(NULL);
 }

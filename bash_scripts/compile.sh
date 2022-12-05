@@ -15,5 +15,5 @@ fi
 
 for ((c=$1; c<=$second; c++))
 do
-    gcc ./lab$c/c/lab$c.c -Wall -Wextra -Werror -lpthread -ggdb -o lab$c/executables/main
+    gcc ./lab$c/c/*.c -Wall -Wextra -Werror -lpthread -ggdb -o lab$c/executables/main
 done

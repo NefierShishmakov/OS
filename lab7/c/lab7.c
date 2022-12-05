@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <sys/types.h>
@@ -33,27 +34,52 @@ void try_to_create_thread(void *(*start_routine)(void *), void *arg) {
 void *copy_file(void *arg) {
     char *relative_filepath = (char *)arg;
 
-    char src_filepath[get_length_of_new_path(srcdir_path, relative_filepath)];
-    char dest_filepath[get_length_of_new_path(destdir_path, relative_filepath)];
+    char src_filepath[get_length_of_new_path(srcdir_path, relative_filepath, true)];
+    char dest_filepath[get_length_of_new_path(destdir_path, relative_filepath, true)];
 
-    strcpy(strcpy(src_filepath, srcdir_path), relative_filepath);
-    strcpy(strcpy(dest_filepath, destdir_path), relative_filepath);
+    strcat(strcat(strcpy(src_filepath, srcdir_path), SEPARATOR), relative_filepath);
+    strcat(strcat(strcpy(dest_filepath, destdir_path), SEPARATOR), relative_filepath);
 
     free(relative_filepath);
 
-    char buffer[BUFSIZE];
     int src_fd;
     int dest_fd;
-
-    // TODO
-    // Think how to read and write file 
-    // Watch the last link in browser
-
-    // Examples of opening src_fd and dest_fd
-    //src_fd = open(src_filepath, O_RDONLY, 0700);
-    //dest_fd = open(dest_filepath, O_WRONLY | O_CREAT, 0700);
     
+    src_fd = try_to_open_file(src_filepath, O_RDONLY, 0);
 
+    if (src_fd == ERROR) {
+        return NULL;
+    }
+
+    dest_fd = try_to_open_file(dest_filepath, O_CREAT | O_WRONLY, 0);
+
+    if (dest_fd == ERROR) {
+        close(src_fd);
+        return NULL;
+    }
+
+    char buffer[BUFSIZ];
+    ssize_t read_bytes;
+    
+    while (true) {
+        read_bytes = read(src_fd, buffer, BUFSIZ);
+        
+        if (read_bytes == END_OF_FILE) {
+            break;
+        }
+        else if (read_bytes == ERROR) {
+            perror("read");
+            break;
+        }
+
+        ssize_t written_bytes = write(dest_fd, buffer, read_bytes);
+
+        if (written_bytes == ERROR) {
+            perror("write");
+            break;
+        }
+    }
+    
     close(src_fd);
     close(dest_fd);
 
@@ -67,38 +93,32 @@ void *copy_dir(void *arg) {
     strcpy(dirname, dirpath_arg);
     free(dirpath_arg);
 
-    char new_src_dir_path[get_length_of_new_path(srcdir_path, dirname)];
-    strcat(strcpy(new_src_dir_path, srcdir_path), dirname);
+    char new_src_dir_path[get_length_of_new_path(srcdir_path, dirname, true)];
+    strcat(strcat(strcpy(new_src_dir_path, srcdir_path), SEPARATOR), dirname);
     
-    DIR *new_srcpdir;
+    DIR *new_srcpdir = NULL;
+
+    int status = try_to_open_dir(&new_srcpdir, new_src_dir_path);
+
+    if (status == ERROR) {
+        exit(EXIT_FAILURE);
+    }
+
     struct dirent *new_src_direntp;
-
-    do {
-        new_srcpdir = opendir(new_src_dir_path);
-        if (new_srcpdir == NULL) {
-            switch (errno) {
-                case EMFILE:
-                    sleep(WAIT_SEC_FOR_FD);
-                    break;
-                default:
-                    perror("opendir");
-                    return NULL;
-            }
-        }
-    } while (new_srcpdir == NULL);
-
+    
     while ((new_src_direntp = readdir(new_srcpdir)) != NULL) {
-        if (!(strcmp(new_src_direntp->d_name, ".") && strcmp(new_src_direntp->d_name, ".."))) {
+        if (!(strcmp(new_src_direntp->d_name, CURRENT_DIR) && 
+                    strcmp(new_src_direntp->d_name, PREVIOUS_DIR))) {
             continue;
         }
         
         // This is a path of file in src directory
         //strlen(new_src_dir_path) + strlen(new_src_direntp->d_name) + 1
-        char path_src[get_length_of_new_path(new_src_dir_path, new_src_direntp->d_name)];
+        char path_src[get_length_of_new_path(new_src_dir_path, new_src_direntp->d_name, false)];
         strcat(strcpy(path_src, new_src_dir_path), new_src_direntp->d_name);
 
         struct stat buf;
-        int status = stat(path_src, &buf);
+        status = stat(path_src, &buf);
 
         if (status != SUCCESS) {
             perror("stat");
@@ -106,16 +126,16 @@ void *copy_dir(void *arg) {
         }
         //strlen(dirname) + strlen(new_src_direntp->d_name)
         char *relative_path = (char *)malloc((get_length_of_new_path(dirname, 
-                        new_src_direntp->d_name) + 1) * sizeof(char));
+                        new_src_direntp->d_name, true)) * sizeof(char));
 
-        strcat(strcat(strcpy(relative_path, dirname), SEPARATOR), new_src_direntp->d_name);
+        strcat(strcat(strcpy(relative_path, dirname), new_src_direntp->d_name), SEPARATOR);
 
         if ((buf.st_mode & S_IFMT) == S_IFREG) {
             try_to_create_thread(copy_file, (void *)&relative_path);
         }
         else if ((buf.st_mode & S_IFMT) == S_IFDIR) {
-            char dest_path[get_length_of_new_path(destdir_path, relative_path)];
-            strcpy(strcpy(dest_path, destdir_path), relative_path);
+            char dest_path[get_length_of_new_path(destdir_path, relative_path, true)];
+            strcat(strcat(strcpy(dest_path, destdir_path), SEPARATOR), relative_path);
 
             status = try_to_mkdir(dest_path);
 
@@ -130,8 +150,8 @@ void *copy_dir(void *arg) {
         }
     }
     
-    int close_dir_status = closedir(new_srcpdir);
-    if (close_dir_status != SUCCESS) {
+    status = closedir(new_srcpdir);
+    if (status != SUCCESS) {
         perror("closedir");
     }
 
@@ -151,9 +171,9 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    prepare_dirs(srcdir_path, destdir_path); 
+    prepare_paths(srcdir_path, destdir_path);
 
-    copy_dir((void *)strdup(""));
+    copy_dir((void *)strdup(INITIAL_VALUE));
 
     pthread_exit(NULL);
 }

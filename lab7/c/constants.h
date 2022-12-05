@@ -5,13 +5,17 @@
 #define SOURCE_TREE_FULL_PATH_ARGC_IDX 1
 #define TARGET_TREE_FULL_PATH_ARGC_IDX 2
 
-#define BUFSIZE 4097
 #define ERROR_BUFSIZE 1025
 #define SEPARATOR "/"
+#define INITIAL_VALUE ""
+#define CURRENT_DIR "."
+#define PREVIOUS_DIR ".."
 #define WAIT_SEC_FOR_FD 1
 #define WAIT_SEC_FOR_THREAD_RESOURCES 5
 
 #define SUCCESS 0
 #define ERROR (-1)
+
+#define END_OF_FILE 0
 
 #endif

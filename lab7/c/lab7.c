@@ -163,8 +163,8 @@ int main(int argc, char **argv) {
     destdir_path = argv[TARGET_TREE_FULL_PATH_ARGC_IDX];
 
     prepare_paths(srcdir_path, destdir_path);
-    
-    if (!strcmp(srcdir_path, destdir_path)) {
+       
+    if (strstr(destdir_path, srcdir_path) != NULL) {
         fprintf(stderr, "Can't copy %s dir to itself\n", srcdir_path);
         return EXIT_FAILURE;
     }

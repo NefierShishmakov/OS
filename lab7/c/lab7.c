@@ -16,11 +16,11 @@ char *srcdir_path;
 char *destdir_path;
 
 void try_to_create_thread(void *(*start_routine)(void *), void *arg) {
-    pthread_t pid;
+    pthread_t tid;
     int status;
 
     do {
-        status = pthread_create(&pid, NULL, start_routine, arg);
+        status = pthread_create(&tid, NULL, start_routine, arg);
 
         if (status == EAGAIN) {
             sleep(WAIT_SEC_FOR_RESOURCES);
@@ -28,7 +28,7 @@ void try_to_create_thread(void *(*start_routine)(void *), void *arg) {
 
     } while (status != SUCCESS);
 
-    pthread_detach(pid);
+    pthread_detach(tid);
 }
 
 void *copy_file(void *arg) {
@@ -165,7 +165,7 @@ int main(int argc, char **argv) {
     prepare_paths(srcdir_path, destdir_path);
        
     if (strstr(destdir_path, srcdir_path) != NULL) {
-        fprintf(stderr, "Can't copy %s dir to itself\n", srcdir_path);
+        fprintf(stderr, "Can\'t copy %s dir to itself\n", srcdir_path);
         return EXIT_FAILURE;
     }
 

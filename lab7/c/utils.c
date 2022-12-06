@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "constants.h"
 
 int try_to_mkdir(const char *dir) {
     int status = mkdir(dir, 0700);
@@ -28,6 +29,9 @@ int try_to_open_dir(DIR **dir_stream, const char *dir_path) {
             switch (errno) {
                 case EMFILE:
                     sleep(WAIT_SEC_FOR_FD);
+                    break;
+                case ENOMEM:
+                    sleep(WAIT_SEC_FOR_RESOURCES);
                     break;
                 default:
                     perror("opendir");

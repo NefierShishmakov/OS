@@ -11,7 +11,7 @@
 #define CURRENT_DIR "."
 #define PREVIOUS_DIR ".."
 #define WAIT_SEC_FOR_FD 1
-#define WAIT_SEC_FOR_THREAD_RESOURCES 1
+#define WAIT_SEC_FOR_RESOURCES 1
 
 #define SUCCESS 0
 #define ERROR (-1)

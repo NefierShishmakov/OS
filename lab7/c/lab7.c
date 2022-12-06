@@ -23,7 +23,7 @@ void try_to_create_thread(void *(*start_routine)(void *), void *arg) {
         status = pthread_create(&pid, NULL, start_routine, arg);
 
         if (status == EAGAIN) {
-            sleep(WAIT_SEC_FOR_THREAD_RESOURCES);
+            sleep(WAIT_SEC_FOR_RESOURCES);
         }
 
     } while (status != SUCCESS);

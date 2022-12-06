@@ -50,7 +50,7 @@ void *copy_file(void *arg) {
     struct stat buf;
     stat(src_filepath, &buf);
 
-    dest_fd = try_to_open_file(dest_filepath, O_CREAT | O_WRONLY, buf.st_mode);
+    dest_fd = try_to_open_file(dest_filepath, O_CREAT | O_WRONLY | O_TRUNC, buf.st_mode);
 
     if (dest_fd == ERROR) {
         close(src_fd);
@@ -170,13 +170,14 @@ int main(int argc, char **argv) {
     
     if (!strcmp(srcdir_path, destdir_path)) {
         fprintf(stderr, "Can't copy %s dir to itself\n", srcdir_path);
+        return EXIT_FAILURE;
     }
 
     if (try_to_mkdir(destdir_path) == ERROR) {
         return EXIT_FAILURE;
     }
 
-    copy_dir(strdup(""));
+    copy_dir(strdup(INITIAL_VALUE));
 
     pthread_exit(NULL);
 }

@@ -18,5 +18,6 @@ int try_to_open_file(const char *pathname, int flags, mode_t mode);
 size_t get_length_of_new_path(const char *first_path, const char *second_path, 
         bool is_separator_needed);
 void prepare_paths(char *first_path, char *second_path);
+void handle_error(int errnum);
 
 #endif

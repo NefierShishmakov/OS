@@ -3,18 +3,18 @@
 
 int try_to_mkdir(const char *dir, mode_t mode) {
     int status = mkdir(dir, mode);
-
+    
     if (status != SUCCESS) {
         if (errno == EEXIST) {
             status = access(dir, W_OK | X_OK);
 
             if (status != SUCCESS) {
-                fprintf(stderr, "%s is exists but not accessible\n", dir);
+                fprintf(stderr, "Destination directory %s exists but not accessible\n", dir);
                 return ERROR;
             }
         }
         else {
-            perror("mkdir");
+            handle_error(errno);
             return ERROR;
         }
     }
@@ -22,7 +22,7 @@ int try_to_mkdir(const char *dir, mode_t mode) {
     return SUCCESS;
 }
 
-int try_to_open_dir(DIR **dir_stream, const char *dir_path) {
+int try_to_open_dir(DIR **dir_stream, const char *dir_path) {   
     do {
         (*dir_stream) = opendir(dir_path);
         if ((*dir_stream) == NULL) {
@@ -34,7 +34,7 @@ int try_to_open_dir(DIR **dir_stream, const char *dir_path) {
                     sleep(WAIT_SEC_FOR_RESOURCES);
                     break;
                 default:
-                    perror("opendir");
+                    handle_error(errno);
                     return ERROR;
             }
         }
@@ -45,7 +45,7 @@ int try_to_open_dir(DIR **dir_stream, const char *dir_path) {
 
 int try_to_open_file(const char *pathname, int flags, mode_t mode) {
     int fd;
-
+    
     do {
         fd = open(pathname, flags, mode);
         
@@ -55,7 +55,7 @@ int try_to_open_file(const char *pathname, int flags, mode_t mode) {
                     sleep(WAIT_SEC_FOR_FD);
                     break;
                 default:
-                    perror("open");
+                    handle_error(errno);
                     return ERROR;
             }
         }
@@ -83,3 +83,8 @@ size_t get_length_of_new_path(const char *first_path, const char *second_path,
     return (is_separator_needed ? (result_len + 1) : result_len);
 }
 
+void handle_error(int errnum) {
+    char error_buffer[ERROR_BUFSIZE];
+    strerror_r(errnum, error_buffer, ERROR_BUFSIZE);
+    fprintf(stderr, "%s\n", error_buffer);
+}

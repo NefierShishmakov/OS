@@ -59,7 +59,7 @@ void *copy_file(void *arg) {
 
     char buffer[BUFSIZ];
     ssize_t read_bytes;
-    
+
     while (true) {
         read_bytes = read(src_fd, buffer, BUFSIZ);
         
@@ -67,14 +67,14 @@ void *copy_file(void *arg) {
             break;
         }
         else if (read_bytes == ERROR) {
-            perror("read");
+            handle_error(errno);
             break;
         }
 
         ssize_t written_bytes = write(dest_fd, buffer, read_bytes);
 
         if (written_bytes == ERROR) {
-            perror("write");
+            handle_error(errno);
             break;
         }
     }
@@ -104,15 +104,13 @@ void *copy_dir(void *arg) {
     }
 
     struct dirent *new_src_direntp;
-    
+
     while ((new_src_direntp = readdir(new_srcpdir)) != NULL) {
         if (!(strcmp(new_src_direntp->d_name, CURRENT_DIR) && 
                     strcmp(new_src_direntp->d_name, PREVIOUS_DIR))) {
             continue;
         }
         
-        // This is a path of file in src directory
-        //strlen(new_src_dir_path) + strlen(new_src_direntp->d_name) + 1
         char path_src[get_length_of_new_path(new_src_dir_path, new_src_direntp->d_name, false)];
         strcat(strcpy(path_src, new_src_dir_path), new_src_direntp->d_name);
 
@@ -120,10 +118,10 @@ void *copy_dir(void *arg) {
         status = stat(path_src, &buf);
 
         if (status != SUCCESS) {
-            perror("stat");
+            handle_error(errno);
             break;
         }
-        //strlen(dirname) + strlen(new_src_direntp->d_name)
+
         char *relative_path = (char *)malloc((get_length_of_new_path(dirname, 
                         new_src_direntp->d_name, true)) * sizeof(char));
 

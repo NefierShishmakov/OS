@@ -46,8 +46,11 @@ void *copy_file(void *arg) {
     if (src_fd == ERROR) {
         return NULL;
     }
+    
+    struct stat buf;
+    stat(src_filepath, &buf);
 
-    dest_fd = try_to_open_file(dest_filepath, O_CREAT | O_WRONLY, 0);
+    dest_fd = try_to_open_file(dest_filepath, O_CREAT | O_WRONLY, buf.st_mode);
 
     if (dest_fd == ERROR) {
         close(src_fd);
@@ -122,12 +125,13 @@ void *copy_dir(void *arg) {
         char *relative_path = (char *)malloc((get_length_of_new_path(dirname, 
                         new_src_direntp->d_name, true)) * sizeof(char));
 
-        strcat(strcat(strcpy(relative_path, dirname), new_src_direntp->d_name), SEPARATOR);
+        strcat(strcpy(relative_path, dirname), new_src_direntp->d_name);
 
         if ((buf.st_mode & S_IFMT) == S_IFREG) {
             try_to_create_thread(copy_file, (void *)relative_path);
         }
         else if ((buf.st_mode & S_IFMT) == S_IFDIR) {
+            strcat(relative_path, SEPARATOR);
             char dest_path[get_length_of_new_path(destdir_path, relative_path, true)];
             strcat(strcat(strcpy(dest_path, destdir_path), SEPARATOR), relative_path);
 
@@ -162,11 +166,15 @@ int main(int argc, char **argv) {
     srcdir_path = argv[SOURCE_TREE_FULL_PATH_ARGC_IDX];
     destdir_path = argv[TARGET_TREE_FULL_PATH_ARGC_IDX];
 
+    prepare_paths(srcdir_path, destdir_path);
+    
+    if (!strcmp(srcdir_path, destdir_path)) {
+        fprintf(stderr, "Can't copy %s dir to itself\n", srcdir_path);
+    }
+
     if (try_to_mkdir(destdir_path) == ERROR) {
         return EXIT_FAILURE;
     }
-
-    prepare_paths(srcdir_path, destdir_path);
 
     copy_dir(strdup(""));
 

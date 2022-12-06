@@ -96,7 +96,9 @@ void *copy_dir(void *arg) {
     DIR *new_srcpdir = NULL;
     
     int status = try_to_open_dir(&new_srcpdir, new_src_dir_path);
-
+    
+    // TODO
+    // Fix exit on returning error num
     if (status == ERROR) {
         exit(EXIT_FAILURE);
     }

@@ -94,13 +94,13 @@ void *copy_dir(void *arg) {
     free(arg);
     
     DIR *new_srcpdir = NULL;
-    
     int status = try_to_open_dir(&new_srcpdir, new_src_dir_path);
     
-    // TODO
-    // Fix exit on returning error num
     if (status == ERROR) {
-        exit(EXIT_FAILURE);
+        if (!strcmp(dirname, INITIAL_VALUE)) {
+            exit(EXIT_FAILURE);
+        }
+        return NULL;
     }
 
     struct dirent *new_src_direntp;
@@ -137,11 +137,11 @@ void *copy_dir(void *arg) {
             char dest_path[get_length_of_new_path(destdir_path, relative_path, true)];
             strcat(strcat(strcpy(dest_path, destdir_path), SEPARATOR), relative_path);
 
-            status = try_to_mkdir(dest_path);
+            status = try_to_mkdir(dest_path, buf.st_mode);
 
             if (status != SUCCESS) {
                 free(relative_path);
-                break;
+                continue;
             }
 
             try_to_create_thread(copy_dir, (void *)relative_path);
@@ -151,11 +151,7 @@ void *copy_dir(void *arg) {
         }
     }
     
-    status = closedir(new_srcpdir);
-    if (status != SUCCESS) {
-        perror("closedir");
-    }
-
+    closedir(new_srcpdir);
     return NULL;
 }
 
@@ -175,7 +171,7 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    if (try_to_mkdir(destdir_path) == ERROR) {
+    if (try_to_mkdir(destdir_path, DEFAULT_FOLDER_MODE) == ERROR) {
         return EXIT_FAILURE;
     }
 

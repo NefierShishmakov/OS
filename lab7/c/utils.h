@@ -12,7 +12,7 @@
 #include <fcntl.h>
 #include "constants.h"
 
-int try_to_mkdir(const char *dir);
+int try_to_mkdir(const char *dir, mode_t mode);
 int try_to_open_dir(DIR **dir_stream, const char *dir_path);
 int try_to_open_file(const char *pathname, int flags, mode_t mode);
 size_t get_length_of_new_path(const char *first_path, const char *second_path, 

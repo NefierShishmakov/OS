@@ -1,8 +1,8 @@
 #include "utils.h"
 #include "constants.h"
 
-int try_to_mkdir(const char *dir) {
-    int status = mkdir(dir, 0700);
+int try_to_mkdir(const char *dir, mode_t mode) {
+    int status = mkdir(dir, mode);
 
     if (status != SUCCESS) {
         if (errno == EEXIST) {

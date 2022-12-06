@@ -1,13 +1,7 @@
 #include <unistd.h>
 #include "node.h"
 #include "utils.h"
-
-#define SEC_TO_SLEEP 5
-
-#define CONTINUE 1
-#define END_OF_DATA 2
-
-#define END_INPUT_SYM 'q'
+#include "main_constants.h"
 
 enum operations {
     PRINT_LIST = 1,
@@ -76,7 +70,7 @@ void read_lines(Node **head) {
 
         read_status = handle_new_line(head, line, strlen(line));
 
-        memset(line, 0, MAX_ENTERED_LINE_LENGTH);
+        memset(line, '\0', MAX_ENTERED_LINE_LENGTH);
     }
 }
 

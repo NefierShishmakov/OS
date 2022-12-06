@@ -37,7 +37,8 @@ void push(Node **head, char *line, int chars_num_to_copy) {
 
     if ((*head) == NULL) {
         (*head) = new_node;
-    } else {
+    } 
+    else {
         Node *prev_head = (*head);
         new_node->next = prev_head;
         (*head) = new_node;
@@ -77,7 +78,7 @@ void bubbleSort(Node **head) {
 
 int init_resources(Node **head) {
     *head = NULL;
-
+    
     int status = pthread_mutex_init(&mutex, NULL);
 
     if (status != SUCCESS) {
@@ -100,3 +101,4 @@ int free_resources(Node **head) {
 
     return SUCCESS;
 }
+

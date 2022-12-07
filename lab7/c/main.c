@@ -32,7 +32,7 @@ void *copy_file(void *arg) {
 
     int src_fd;
     int dest_fd;
-    src_fd = try_to_open_file(paths->src_path, O_RDONLY, 0);
+    src_fd = try_to_open_file(paths->src_path, O_RDONLY, NO_MODE);
 
     if (src_fd == ERROR) {
         return NULL;

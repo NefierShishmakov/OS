@@ -12,12 +12,14 @@
 #include <fcntl.h>
 #include "constants.h"
 
-int try_to_mkdir(const char *dir, mode_t mode);
+int try_to_mkdir(const char *dir_path, mode_t mode);
 int try_to_open_dir(DIR **dir_stream, const char *dir_path);
-int try_to_open_file(const char *pathname, int flags, mode_t mode);
+int try_to_open_file(const char *file_path, int flags, mode_t mode);
 size_t get_length_of_new_path(const char *first_path, const char *second_path);
 void prepare_paths(char *first_path, char *second_path);
-void handle_error(int errnum);
+void handle_file_error(const char *error_cause, const char *file_path, int errnum);
+void handle_dir_error(const char *error_cause, const char *dir_path, int errnum);
+void handle_pthread_error(const char *error_cause, int errnum);
 bool is_wrong_element(const char *el);
 
 #endif

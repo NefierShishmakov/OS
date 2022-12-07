@@ -30,7 +30,7 @@ void free_resources(Node *head) {
         int status = pthread_join(to_del->tid, NULL);
 
         if (status != SUCCESS) {
-            handle_error(status);
+            handle_pthread_error("pthread_join", status);
         }
 
         free_paths_t(to_del->paths);

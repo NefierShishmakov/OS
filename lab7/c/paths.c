@@ -9,9 +9,11 @@ void init_paths_t(paths_t *paths, const char *src_path,
 
     paths->src_path = (char *)malloc(src_path_len * sizeof(char));
     paths->dest_path = (char *)malloc(dest_path_len * sizeof(char));
+    
+    char *separation_sym = (!strcmp(new_path_el, INITIAL_VALUE) ? INITIAL_VALUE: SEPARATOR);
 
-    strcat(strcat(strcpy(paths->src_path, src_path), SEPARATOR), new_path_el);
-    strcat(strcat(strcpy(paths->dest_path, dest_path), SEPARATOR), new_path_el);
+    strcat(strcat(strcpy(paths->src_path, src_path), separation_sym), new_path_el);
+    strcat(strcat(strcpy(paths->dest_path, dest_path), separation_sym), new_path_el);
 }
 
 void free_paths_t(paths_t *paths) {

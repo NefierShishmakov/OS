@@ -13,11 +13,12 @@
 #include "paths.h"
 #include "utils.h"
 
-void try_to_create_thread(pthread_t *tid, void *(*start_routine)(void *), void *arg) {
+void try_to_create_thread(pthread_t *tid, pthread_attr_t *attr, 
+        void *(*start_routine)(void *), void *arg) {
     int status;
 
     do {
-        status = pthread_create(tid, NULL, start_routine, arg);
+        status = pthread_create(tid, attr, start_routine, arg);
 
         if (status == EAGAIN) {
             sleep(WAIT_SEC_FOR_RESOURCES);
@@ -54,14 +55,14 @@ void *copy_file(void *arg) {
             break;
         }
         else if (read_bytes == ERROR) {
-            handle_error(errno);
+            handle_file_error("read", paths->src_path, errno);
             break;
         }
 
         ssize_t written_bytes = write(dest_fd, buffer, read_bytes);
 
         if (written_bytes == ERROR) {
-            handle_error(errno);
+            handle_file_error("write", paths->dest_path, errno);
             break;
         }
     }
@@ -101,22 +102,17 @@ void *copy_dir(void *arg) {
         init_paths_t(new_paths, paths->src_path, paths->dest_path, new_src_direntp->d_name);
 
         struct stat buf;
-        status = stat(new_paths->src_path, &buf);
-
-        if (status != SUCCESS) {
-            handle_error(errno);
-            break;
-        }
+        stat(new_paths->src_path, &buf);
 
         set_mode(new_paths, buf.st_mode);
         
         pthread_t tid;
         if ((buf.st_mode & S_IFMT) == S_IFREG) {
-            try_to_create_thread(&tid, copy_file, new_paths);
+            try_to_create_thread(&tid, NULL, copy_file, new_paths);
             push(&head, tid, new_paths);
         }
         else if ((buf.st_mode & S_IFMT) == S_IFDIR) {
-            try_to_create_thread(&tid, copy_dir, new_paths);
+            try_to_create_thread(&tid, NULL, copy_dir, new_paths);
             push(&head, tid, new_paths);
         }
         else {

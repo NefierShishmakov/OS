@@ -4,7 +4,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include "paths.h"
-#include "utils.h"
+#include "file_dir_utils.h"
 
 typedef struct Node {
     pthread_t tid;

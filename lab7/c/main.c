@@ -9,36 +9,25 @@
 #include <fcntl.h>
 #include <string.h>
 #include <pthread.h>
+#include "constants.h"
 #include "node.h"
 #include "paths.h"
-#include "utils.h"
-
-void try_to_create_thread(pthread_t *tid, pthread_attr_t *attr, 
-        void *(*start_routine)(void *), void *arg) {
-    int status;
-
-    do {
-        status = pthread_create(tid, attr, start_routine, arg);
-
-        if (status == EAGAIN) {
-            sleep(WAIT_SEC_FOR_RESOURCES);
-        }
-
-    } while (status != SUCCESS);
-}
+#include "file_dir_utils.h"
+#include "pthread_utils.h"
 
 void *copy_file(void *arg) {
     paths_t *paths = (paths_t *)arg;
 
     int src_fd;
     int dest_fd;
-    src_fd = try_to_open_file(paths->src_path, O_RDONLY, NO_MODE);
+    src_fd = try_to_open_file_with_retry(paths->src_path, O_RDONLY, NO_MODE);
 
     if (src_fd == ERROR) {
         return NULL;
     }
 
-    dest_fd = try_to_open_file(paths->dest_path, O_CREAT | O_WRONLY | O_TRUNC, paths->mode);
+    dest_fd = try_to_open_file_with_retry(paths->dest_path, O_CREAT | O_WRONLY | O_TRUNC, 
+            paths->mode);
 
     if (dest_fd == ERROR) {
         close(src_fd);
@@ -83,7 +72,7 @@ void *copy_dir(void *arg) {
     }
 
     DIR *new_srcpdir = NULL;
-    status = try_to_open_dir(&new_srcpdir, paths->src_path);
+    status = try_to_open_dir_with_retry(&new_srcpdir, paths->src_path);
     
     if (status == ERROR) {
         return NULL;
@@ -108,11 +97,23 @@ void *copy_dir(void *arg) {
         
         pthread_t tid;
         if ((buf.st_mode & S_IFMT) == S_IFREG) {
-            try_to_create_thread(&tid, NULL, copy_file, new_paths);
+            status = try_to_create_thread_with_retry(&tid, NULL, copy_file, new_paths);
+
+            if (status != SUCCESS) {
+                free_paths_t(new_paths);
+                break;
+            }
+
             push(&head, tid, new_paths);
         }
         else if ((buf.st_mode & S_IFMT) == S_IFDIR) {
-            try_to_create_thread(&tid, NULL, copy_dir, new_paths);
+            status = try_to_create_thread_with_retry(&tid, NULL, copy_dir, new_paths);
+
+            if (status != SUCCESS) {
+                free_paths_t(new_paths);
+                break;
+            }
+
             push(&head, tid, new_paths);
         }
         else {

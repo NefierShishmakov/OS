@@ -1,6 +1,4 @@
 #include "paths.h"
-#include "constants.h"
-#include "utils.h"
 
 void init_paths_t(paths_t *paths, const char *src_path, 
         const char *dest_path, const char *new_path_el) {
@@ -24,4 +22,21 @@ void free_paths_t(paths_t *paths) {
 
 void set_mode(paths_t *paths, mode_t mode) {
     paths->mode = mode;
+}
+
+void prepare_paths(char *first_path, char *second_path) {
+    size_t first_path_len = strlen(first_path);
+    size_t second_path_len = strlen(second_path);
+
+    if (first_path[first_path_len - 1] == '/') {
+        first_path[first_path_len - 1] = '\0';
+    }
+
+    if (second_path[second_path_len - 1] == '/') {
+        second_path[second_path_len - 1] = '\0';
+    }
+}
+
+size_t get_length_of_new_path(const char *first_path, const char *second_path) {
+    return (strlen(first_path) + strlen(second_path) + 2);
 }

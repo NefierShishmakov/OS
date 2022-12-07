@@ -1,5 +1,4 @@
-#include "utils.h"
-#include "constants.h"
+#include "file_dir_utils.h"
 
 int try_to_mkdir(const char *dir_path, mode_t mode) {
     int status = mkdir(dir_path, mode);
@@ -23,7 +22,7 @@ int try_to_mkdir(const char *dir_path, mode_t mode) {
     return SUCCESS;
 }
 
-int try_to_open_dir(DIR **dir_stream, const char *dir_path) {   
+int try_to_open_dir_with_retry(DIR **dir_stream, const char *dir_path) {   
     do {
         (*dir_stream) = opendir(dir_path);
         if ((*dir_stream) == NULL) {
@@ -44,7 +43,7 @@ int try_to_open_dir(DIR **dir_stream, const char *dir_path) {
     return SUCCESS;
 }
 
-int try_to_open_file(const char *file_path, int flags, mode_t mode) {
+int try_to_open_file_with_retry(const char *file_path, int flags, mode_t mode) {
     int fd;
     
     do {
@@ -67,23 +66,6 @@ int try_to_open_file(const char *file_path, int flags, mode_t mode) {
     }
 
     return fd;
-}
-
-void prepare_paths(char *first_path, char *second_path) {
-    size_t first_path_len = strlen(first_path);
-    size_t second_path_len = strlen(second_path);
-
-    if (first_path[first_path_len - 1] == '/') {
-        first_path[first_path_len - 1] = '\0';
-    }
-
-    if (second_path[second_path_len - 1] == '/') {
-        second_path[second_path_len - 1] = '\0';
-    }
-}
-
-size_t get_length_of_new_path(const char *first_path, const char *second_path) {
-    return (strlen(first_path) + strlen(second_path) + 2);
 }
 
 bool is_wrong_element(const char *el) {

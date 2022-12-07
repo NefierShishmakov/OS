@@ -1,5 +1,5 @@
-#ifndef UTILS_H
-#define UTILS_H
+#ifndef FILE_DIR_UTILS_H
+#define FILE_DIR_UTILS_H
 
 #include <sys/stat.h>
 #include <string.h>
@@ -14,10 +14,8 @@
 #include "error_handlers.h"
 
 int try_to_mkdir(const char *dir_path, mode_t mode);
-int try_to_open_dir(DIR **dir_stream, const char *dir_path);
-int try_to_open_file(const char *file_path, int flags, mode_t mode);
-size_t get_length_of_new_path(const char *first_path, const char *second_path);
-void prepare_paths(char *first_path, char *second_path);
+int try_to_open_dir_with_retry(DIR **dir_stream, const char *dir_path);
+int try_to_open_file_with_retry(const char *file_path, int flags, mode_t mode);
 bool is_wrong_element(const char *el);
 
 #endif

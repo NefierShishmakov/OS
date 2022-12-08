@@ -1,4 +1,5 @@
 #include "paths.h"
+#include "constants.h"
 
 void init_paths_t(paths_t *paths, const char *src_path, 
         const char *dest_path, const char *new_path_el) {
@@ -28,12 +29,12 @@ void prepare_paths(char *first_path, char *second_path) {
     size_t first_path_len = strlen(first_path);
     size_t second_path_len = strlen(second_path);
 
-    if (first_path[first_path_len - 1] == '/') {
-        first_path[first_path_len - 1] = '\0';
+    if (!strcmp(&first_path[first_path_len - 1], SEPARATOR)) {
+        first_path[first_path_len - 1] = END_OF_STRING;
     }
 
-    if (second_path[second_path_len - 1] == '/') {
-        second_path[second_path_len - 1] = '\0';
+    if (!strcmp(&second_path[second_path_len - 1], SEPARATOR)) {
+        second_path[second_path_len - 1] = END_OF_STRING;
     }
 }
 

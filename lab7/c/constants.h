@@ -20,5 +20,6 @@
 #define ERROR (-1)
 
 #define END_OF_FILE 0
+#define END_OF_STRING '\0'
 
 #endif

@@ -7,7 +7,6 @@
 #include "constants.h"
 #include "error_handlers.h"
 
-int try_to_create_thread_with_retry(pthread_t *tid, pthread_attr_t *attr, 
-        void *(*start_routine)(void *), void *arg);
+int try_to_create_thread(pthread_t *tid, void *(*start_routine)(void *), void *arg);
 
 #endif

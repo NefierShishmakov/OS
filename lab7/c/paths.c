@@ -1,18 +1,41 @@
 #include "paths.h"
 #include "constants.h"
 
-void init_paths_t(paths_t *paths, const char *src_path, 
+int init_paths_t(paths_t **paths, const char *src_path, 
         const char *dest_path, const char *new_path_el) {
     size_t src_path_len = get_length_of_new_path(src_path, new_path_el);
     size_t dest_path_len = get_length_of_new_path(dest_path, new_path_el);
 
-    paths->src_path = (char *)malloc(src_path_len * sizeof(char));
-    paths->dest_path = (char *)malloc(dest_path_len * sizeof(char));
+    (*paths) = (paths_t *)malloc(sizeof(paths_t));
+
+    if ((*paths) == NULL) {
+        fprintf(stderr, "Error allocating paths_t structure\n");
+        return ERROR;
+    }
+
+    (*paths)->src_path = (char *)malloc(src_path_len * sizeof(char));
+
+    if ((*paths)->src_path == NULL) {
+        fprintf(stderr, "Error allocating string for %s%s%s\n", src_path, SEPARATOR, new_path_el);
+        free(*paths);
+        return ERROR;
+    }
+
+    (*paths)->dest_path = (char *)malloc(dest_path_len * sizeof(char));
+
+    if ((*paths)->dest_path == NULL) {
+        fprintf(stderr, "Error allocating string for %s%s%s\n", dest_path, SEPARATOR, new_path_el);
+        free((*paths)->src_path);
+        free(*paths);
+        return ERROR;
+    }
     
     char *separation_sym = (!strcmp(new_path_el, INITIAL_VALUE) ? INITIAL_VALUE: SEPARATOR);
 
-    strcat(strcat(strcpy(paths->src_path, src_path), separation_sym), new_path_el);
-    strcat(strcat(strcpy(paths->dest_path, dest_path), separation_sym), new_path_el);
+    strcat(strcat(strcpy((*paths)->src_path, src_path), separation_sym), new_path_el);
+    strcat(strcat(strcpy((*paths)->dest_path, dest_path), separation_sym), new_path_el);
+
+    return SUCCESS;
 }
 
 void free_paths_t(paths_t *paths) {

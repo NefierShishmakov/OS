@@ -10,7 +10,6 @@
 #include <string.h>
 #include <pthread.h>
 #include "constants.h"
-#include "node.h"
 #include "paths.h"
 #include "file_dir_utils.h"
 #include "pthread_utils.h"
@@ -23,6 +22,7 @@ void *copy_file(void *arg) {
     src_fd = try_to_open_file_with_retry(paths->src_path, O_RDONLY, NO_MODE);
 
     if (src_fd == ERROR) {
+        free_paths_t(paths);
         return NULL;
     }
 
@@ -31,6 +31,7 @@ void *copy_file(void *arg) {
 
     if (dest_fd == ERROR) {
         close(src_fd);
+        free_paths_t(paths);
         return NULL;
     }
 
@@ -58,7 +59,7 @@ void *copy_file(void *arg) {
     
     close(src_fd);
     close(dest_fd);
-
+    free_paths_t(paths);
     pthread_exit(NULL);
 }
 
@@ -68,6 +69,7 @@ void *copy_dir(void *arg) {
     int status = try_to_mkdir(paths->dest_path, paths->mode);
 
     if (status == ERROR) {
+        free_paths_t(paths);
         return NULL;
     }
 
@@ -75,54 +77,61 @@ void *copy_dir(void *arg) {
     status = try_to_open_dir_with_retry(&new_srcpdir, paths->src_path);
     
     if (status == ERROR) {
+        free_paths_t(paths);
         return NULL;
     }
 
     struct dirent *new_src_direntp;
-
-    Node *head = NULL;
 
     while ((new_src_direntp = readdir(new_srcpdir)) != NULL) {
         if (is_wrong_element(new_src_direntp->d_name)) {
             continue;
         }
 
-        paths_t *new_paths = (paths_t *)malloc(sizeof(paths_t));
-        init_paths_t(new_paths, paths->src_path, paths->dest_path, new_src_direntp->d_name);
+        paths_t *new_paths = NULL;
+        status = init_paths_t(&new_paths, paths->src_path, paths->dest_path, 
+                new_src_direntp->d_name);
+
+        if (status != SUCCESS) {
+            break;
+        }
 
         struct stat buf;
-        stat(new_paths->src_path, &buf);
+        status = stat(new_paths->src_path, &buf);
+
+        if (status != SUCCESS) {
+            handle_error("stat", errno);
+            free_paths_t(new_paths);
+            break;
+        }
 
         set_mode(new_paths, buf.st_mode);
         
         pthread_t tid;
         if ((buf.st_mode & S_IFMT) == S_IFREG) {
-            status = try_to_create_thread_with_retry(&tid, NULL, copy_file, new_paths);
+            status = try_to_create_thread(&tid, copy_file, new_paths);
 
             if (status != SUCCESS) {
                 free_paths_t(new_paths);
                 break;
             }
-
-            push(&head, tid, new_paths);
         }
         else if ((buf.st_mode & S_IFMT) == S_IFDIR) {
-            status = try_to_create_thread_with_retry(&tid, NULL, copy_dir, new_paths);
+            status = try_to_create_thread(&tid, copy_dir, new_paths);
 
             if (status != SUCCESS) {
                 free_paths_t(new_paths);
                 break;
             }
-
-            push(&head, tid, new_paths);
         }
         else {
+            fprintf(stdout, "\'%s\' is not a regular file or directory\n", new_paths->src_path);
             free_paths_t(new_paths);
         }
     }
     
     closedir(new_srcpdir);
-    free_resources(head);
+    free_paths_t(paths);
     return NULL;
 }
 
@@ -142,12 +151,16 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    paths_t *paths = (paths_t *)malloc(sizeof(paths_t));
-    init_paths_t(paths, srcdir_path, destdir_path, INITIAL_VALUE);
+    paths_t *paths = NULL;
+    int status = init_paths_t(&paths, srcdir_path, destdir_path, INITIAL_VALUE);
+
+    if (status != SUCCESS) {
+        return EXIT_FAILURE;
+    }
+
     set_mode(paths, DEFAULT_FOLDER_MODE);
     
     copy_dir(paths);
     
-    free_paths_t(paths);
     pthread_exit(NULL);
 }

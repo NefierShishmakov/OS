@@ -30,9 +30,6 @@ int try_to_open_dir_with_retry(DIR **dir_stream, const char *dir_path) {
                 case EMFILE:
                     sleep(WAIT_SEC_FOR_FD);
                     break;
-                case ENOMEM:
-                    sleep(WAIT_SEC_FOR_RESOURCES);
-                    break;
                 default:
                     handle_dir_error("opendir", dir_path, errno);
                     return ERROR;

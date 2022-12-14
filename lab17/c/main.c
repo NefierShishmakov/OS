@@ -18,11 +18,10 @@ void *sort_list(void *arg) {
         bubbleSort(head);
     }
 }
-
-int get_operation(char *line, size_t len) {
+int get_operation(char *line, size_t len) { 
     if (line[0] == '\n') {
         return PRINT_LIST;
-    } else if ((len == 2 && line[0] == END_INPUT_SYM) || len == 0) {
+    } else if ((len == 2 && line[0] == END_INPUT_SYM)) {
         return END_INPUT;
     }
 
@@ -58,7 +57,7 @@ int handle_new_line(Node **head, char *line, size_t len) {
     return CONTINUE;
 }
 
-void read_lines(Node **head) {
+int read_lines(Node **head) {
     char line[MAX_ENTERED_LINE_LENGTH] = {0};
 
     int read_status = CONTINUE;
@@ -66,12 +65,21 @@ void read_lines(Node **head) {
                "to print all lines:\n");
 
     while (read_status != END_OF_DATA) {
-        fgets(line, MAX_ENTERED_LINE_LENGTH, stdin);
+        if (fgets(line, MAX_ENTERED_LINE_LENGTH, stdin) == NULL) {
+            if (feof(stdin) > 0) {
+                break;
+            }
+            
+            fprintf(stderr, "fgets error\n");
+            return FAILURE;
+        }
 
         read_status = handle_new_line(head, line, strlen(line));
 
         memset(line, '\0', MAX_ENTERED_LINE_LENGTH);
     }
+
+    return SUCCESS;
 }
 
 int try_to_cancel_pthread(pthread_t pthread_id) {
@@ -118,7 +126,13 @@ int main(void) {
         return EXIT_FAILURE;
     }
 
-    read_lines(&head);
+    status = read_lines(&head);
+
+    if (status != SUCCESS) {
+        try_to_cancel_pthread(pthread_id);
+        free_resources(&head);
+        return EXIT_FAILURE;
+    }
 
     status = try_to_cancel_pthread(pthread_id);
 

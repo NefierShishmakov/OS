@@ -51,6 +51,19 @@ void *copy_file(void *arg) {
 
         ssize_t written_bytes = write(dest_fd, buffer, read_bytes);
 
+        if (written_bytes < read_bytes) {
+            int remaining_bytes = read_bytes - written_bytes;
+            read_bytes = read(src_fd, buffer, remaining_bytes);
+
+            written_bytes = write(dest_fd, buffer, read_bytes);
+
+            if (written_bytes == ERROR) {
+               handle_file_error("write", paths->dest_path, errno);
+               break;
+            }
+        }
+             
+
         if (written_bytes == ERROR) {
             handle_file_error("write", paths->dest_path, errno);
             break;

@@ -114,27 +114,29 @@ void *copy_dir(void *arg) {
         }
 
         set_mode(new_paths, buf.st_mode);
-        
+
+        void *result_function = NULL;
+
+        switch ((buf.st_mode & S_IFMT)) {
+            case S_IFREG:
+                result_function = copy_file;
+                break;
+            case S_IFDIR:
+                result_function = copy_dir;
+                break;
+            default:
+                fprintf(stdout, "\'%s\' is not a regular file or directory\n", 
+                        new_paths->src_path);
+                free_paths_t(new_paths);
+                continue;
+        }
+
         pthread_t tid;
-        if ((buf.st_mode & S_IFMT) == S_IFREG) {
-            status = try_to_create_thread(&tid, copy_file, new_paths);
+        status = try_to_create_thread(&tid, result_function, new_paths);
 
-            if (status != SUCCESS) {
-                free_paths_t(new_paths);
-                break;
-            }
-        }
-        else if ((buf.st_mode & S_IFMT) == S_IFDIR) {
-            status = try_to_create_thread(&tid, copy_dir, new_paths);
-
-            if (status != SUCCESS) {
-                free_paths_t(new_paths);
-                break;
-            }
-        }
-        else {
-            fprintf(stdout, "\'%s\' is not a regular file or directory\n", new_paths->src_path);
+        if (status != SUCCESS) {
             free_paths_t(new_paths);
+            break;
         }
     }
     

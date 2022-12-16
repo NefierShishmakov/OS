@@ -97,7 +97,7 @@ void *copy_dir(void *arg) {
         }
 
         struct stat buf;
-        status = stat(new_paths->src_path, &buf);
+        status = lstat(new_paths->src_path, &buf);
 
         if (status != SUCCESS) {
             handle_error("stat", errno);

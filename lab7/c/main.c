@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
 
     prepare_paths(srcdir_path, destdir_path);
 
-    if (strstr(destdir_path, srcdir_path) != NULL) {
+    if (strstr(srcdir_path, destdir_path) != NULL) {
         fprintf(stderr, "Can\'t copy %s dir to itself\n", srcdir_path);
         return EXIT_FAILURE;
     }

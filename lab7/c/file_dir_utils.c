@@ -40,6 +40,22 @@ int try_to_open_dir_with_retry(DIR **dir_stream, const char *dir_path) {
     return SUCCESS;
 }
 
+int handle_src_and_dest_dirs(paths_t *paths, DIR **new_srcpdir) {
+    int status = try_to_mkdir(paths->dest_path, paths->mode);
+
+    if (status == ERROR) {
+        return ERROR;
+    }
+
+    status = try_to_open_dir_with_retry(new_srcpdir, paths->src_path);
+    
+    if (status == ERROR) {
+        return ERROR;
+    }
+
+    return SUCCESS;
+}
+
 int try_to_open_file_with_retry(const char *file_path, int flags, mode_t mode) {
     int fd;
     
@@ -63,6 +79,24 @@ int try_to_open_file_with_retry(const char *file_path, int flags, mode_t mode) {
     }
 
     return fd;
+}
+
+int try_to_write_data_to_file_with_retry(const char *buffer, ssize_t read_bytes, int dest_fd) {    
+    ssize_t total_bytes = 0;
+    ssize_t remaining_bytes = read_bytes;
+
+    while (total_bytes < read_bytes) {
+        ssize_t written_bytes = write(dest_fd, &buffer[total_bytes], remaining_bytes);
+
+        if (written_bytes == ERROR) {
+            return ERROR;
+        }
+            
+        total_bytes += written_bytes;
+        remaining_bytes -= written_bytes;
+    }
+
+    return SUCCESS;
 }
 
 bool is_wrong_element(const char *el) {

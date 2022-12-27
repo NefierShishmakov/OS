@@ -1,4 +1,19 @@
 #include "copy.h"
+#include "file_dir_utils.h"
+
+void set_pthread_function(void **result_function, int file_type) {
+    switch (file_type) {
+        case S_IFREG:
+            *result_function = copy_file;
+            break;
+        case S_IFDIR:
+            *result_function = copy_dir;
+            break;
+        default:
+            *result_function = NULL;
+            break;
+    }
+}
 
 void *copy_file(void *arg) {
     paths_t *paths = (paths_t *)arg;
@@ -30,24 +45,16 @@ void *copy_file(void *arg) {
         if (read_bytes == END_OF_FILE) {
             break;
         }
-        else if (read_bytes == ERROR) {
+        if (read_bytes == ERROR) {
             handle_file_error("read", paths->src_path, errno);
             break;
         }
 
-        ssize_t total_bytes = 0;
-        ssize_t remaining_bytes = read_bytes;
+        int status = try_to_write_data_to_file_with_retry(buffer, read_bytes, dest_fd);
 
-        while (total_bytes != read_bytes) {
-            ssize_t written_bytes = write(dest_fd, &buffer[total_bytes], remaining_bytes);
-
-            if (written_bytes == ERROR) {
-                handle_file_error("write", paths->dest_path, errno);
-                break;
-            }
-            
-            total_bytes += written_bytes;
-            remaining_bytes -= written_bytes;
+        if (status == ERROR) {
+            handle_file_error("write", paths->dest_path, errno);
+            break;
         }
     }
     
@@ -59,17 +66,10 @@ void *copy_file(void *arg) {
 
 void *copy_dir(void *arg) {
     paths_t *paths = (paths_t *)arg;
-    
-    int status = try_to_mkdir(paths->dest_path, paths->mode);
-
-    if (status == ERROR) {
-        free_paths_t(paths);
-        return NULL;
-    }
-
     DIR *new_srcpdir = NULL;
-    status = try_to_open_dir_with_retry(&new_srcpdir, paths->src_path);
     
+    int status = handle_src_and_dest_dirs(paths, &new_srcpdir);
+
     if (status == ERROR) {
         free_paths_t(paths);
         return NULL;
@@ -103,18 +103,12 @@ void *copy_dir(void *arg) {
 
         void *result_function = NULL;
 
-        switch ((buf.st_mode & S_IFMT)) {
-            case S_IFREG:
-                result_function = copy_file;
-                break;
-            case S_IFDIR:
-                result_function = copy_dir;
-                break;
-            default:
-                fprintf(stdout, "\'%s\' is not a regular file or directory\n", 
-                        new_paths->src_path);
-                free_paths_t(new_paths);
-                continue;
+        set_pthread_function(&result_function, (buf.st_mode & S_IFMT));
+        
+        if (result_function == NULL) {
+            fprintf(stdout, "\'%s\' is not a regular file or directory\n", new_paths->src_path);
+            free_paths_t(new_paths);
+            continue;
         }
 
         pthread_t tid;

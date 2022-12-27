@@ -8,5 +8,6 @@
 
 void *copy_file(void *arg);
 void *copy_dir(void *arg);
+void set_pthread_function(void **result_function, int file_type);
 
 #endif

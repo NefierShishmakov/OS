@@ -2,7 +2,7 @@
 #include "error_handlers.h"
 #include <pthread.h>
 
-int try_to_create_thread(pthread_t *tid, void *(*start_routine)(void *), void *arg) {
+int try_to_create_thread(pthread_t* tid, void *(*start_routine)(void*), void* arg) {
     pthread_attr_t attr;
 
     int status = pthread_attr_init(&attr);

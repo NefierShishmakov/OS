@@ -4,14 +4,14 @@
 #include "constants.h"
 #include "copy.h"
 
-int main(int argc, char **argv) {
+int main(int argc, char** argv) {
     if ((argc - 1) != DEFAULT_ARGC_NUM) {
         fprintf(stderr, "Usage: first arg - source tree full path, second arg - target tree full path\n");
         return EXIT_FAILURE;
     }
     
-    char *srcdir_path = argv[SOURCE_TREE_FULL_PATH_ARGC_IDX];
-    char *destdir_path = argv[TARGET_TREE_FULL_PATH_ARGC_IDX];
+    char* srcdir_path = argv[SOURCE_TREE_FULL_PATH_ARGC_IDX];
+    char* destdir_path = argv[TARGET_TREE_FULL_PATH_ARGC_IDX];
 
     prepare_paths(srcdir_path, destdir_path);
 
@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
         return EXIT_FAILURE;
     }
 
-    paths_t *paths = NULL;
+    paths_t* paths = NULL;
     int status = init_paths_t(&paths, srcdir_path, destdir_path, INITIAL_VALUE);
 
     if (status != SUCCESS) {

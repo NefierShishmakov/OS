@@ -7,6 +7,6 @@
 #include "constants.h"
 #include "error_handlers.h"
 
-int try_to_create_thread(pthread_t *tid, void *(*start_routine)(void *), void *arg);
+int try_to_create_thread(pthread_t* tid, void *(*start_routine)(void*), void* arg);
 
 #endif

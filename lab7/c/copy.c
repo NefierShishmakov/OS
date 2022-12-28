@@ -1,7 +1,7 @@
 #include "copy.h"
 #include "file_dir_utils.h"
 
-void set_pthread_function(void **result_function, int file_type) {
+void set_pthread_function(void** result_function, int file_type) {
     switch (file_type) {
         case S_IFREG:
             *result_function = copy_file;
@@ -15,8 +15,8 @@ void set_pthread_function(void **result_function, int file_type) {
     }
 }
 
-void *copy_file(void *arg) {
-    paths_t *paths = (paths_t *)arg;
+void* copy_file(void* arg) {
+    paths_t* paths = (paths_t*)arg;
 
     int src_fd;
     int dest_fd;
@@ -64,9 +64,9 @@ void *copy_file(void *arg) {
     pthread_exit(NULL);
 }
 
-void *copy_dir(void *arg) {
-    paths_t *paths = (paths_t *)arg;
-    DIR *new_srcpdir = NULL;
+void* copy_dir(void* arg) {
+    paths_t* paths = (paths_t*)arg;
+    DIR* new_srcpdir = NULL;
     
     int status = handle_src_and_dest_dirs(paths, &new_srcpdir);
 
@@ -75,14 +75,14 @@ void *copy_dir(void *arg) {
         return NULL;
     }
 
-    struct dirent *new_src_direntp;
+    struct dirent* new_src_direntp;
 
     while ((new_src_direntp = readdir(new_srcpdir)) != NULL) {
         if (is_wrong_element(new_src_direntp->d_name)) {
             continue;
         }
 
-        paths_t *new_paths = NULL;
+        paths_t* new_paths = NULL;
         status = init_paths_t(&new_paths, paths->src_path, paths->dest_path, 
                 new_src_direntp->d_name);
 
@@ -101,7 +101,7 @@ void *copy_dir(void *arg) {
 
         set_mode(new_paths, buf.st_mode);
 
-        void *result_function = NULL;
+        void* result_function = NULL;
 
         set_pthread_function(&result_function, (buf.st_mode & S_IFMT));
         
@@ -124,4 +124,3 @@ void *copy_dir(void *arg) {
     free_paths_t(paths);
     return NULL;
 }
-

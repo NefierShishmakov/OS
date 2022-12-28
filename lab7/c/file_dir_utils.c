@@ -1,28 +1,27 @@
 #include "file_dir_utils.h"
 
-int try_to_mkdir(const char *dir_path, mode_t mode) {
+int try_to_mkdir(const char* dir_path, mode_t mode) {
     int status = mkdir(dir_path, mode);
     
     if (status != SUCCESS) {
-        if (errno == EEXIST) {
-            status = access(dir_path, W_OK | X_OK);
-
-            if (status != SUCCESS) {
-                fprintf(stderr, "Directory %s exists but not accessible\n", dir_path);
-                return ERROR;
-            }
-            chmod(dir_path, mode);
-        }
-        else {
+        if (errno != EEXIST) {
             handle_dir_error("mkdir", dir_path, errno);
             return ERROR;
         }
+        
+        status = access(dir_path, W_OK | X_OK);
+
+        if (status != SUCCESS) {
+            fprintf(stderr, "Directory %s exists but not accessible\n", dir_path);
+            return ERROR;
+        }
+        chmod(dir_path, mode);
     }
 
     return SUCCESS;
 }
 
-int try_to_open_dir_with_retry(DIR **dir_stream, const char *dir_path) {   
+int try_to_open_dir_with_retry(DIR** dir_stream, const char* dir_path) {   
     do {
         (*dir_stream) = opendir(dir_path);
         if ((*dir_stream) == NULL) {
@@ -40,7 +39,7 @@ int try_to_open_dir_with_retry(DIR **dir_stream, const char *dir_path) {
     return SUCCESS;
 }
 
-int handle_src_and_dest_dirs(paths_t *paths, DIR **new_srcpdir) {
+int handle_src_and_dest_dirs(paths_t* paths, DIR** new_srcpdir) {
     int status = try_to_mkdir(paths->dest_path, paths->mode);
 
     if (status == ERROR) {
@@ -56,7 +55,7 @@ int handle_src_and_dest_dirs(paths_t *paths, DIR **new_srcpdir) {
     return SUCCESS;
 }
 
-int try_to_open_file_with_retry(const char *file_path, int flags, mode_t mode) {
+int try_to_open_file_with_retry(const char* file_path, int flags, mode_t mode) {
     int fd;
     
     do {
@@ -81,7 +80,7 @@ int try_to_open_file_with_retry(const char *file_path, int flags, mode_t mode) {
     return fd;
 }
 
-int try_to_write_data_to_file_with_retry(const char *buffer, ssize_t read_bytes, int dest_fd) {    
+int try_to_write_data_to_file_with_retry(const char* buffer, ssize_t read_bytes, int dest_fd) {    
     ssize_t total_bytes = 0;
     ssize_t remaining_bytes = read_bytes;
 
@@ -99,6 +98,6 @@ int try_to_write_data_to_file_with_retry(const char *buffer, ssize_t read_bytes,
     return SUCCESS;
 }
 
-bool is_wrong_element(const char *el) {
+bool is_wrong_element(const char* el) {
     return !(strcmp(el, CURRENT_DIR) && strcmp(el, PREVIOUS_DIR));
 }

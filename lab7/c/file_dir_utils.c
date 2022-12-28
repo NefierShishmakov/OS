@@ -18,6 +18,7 @@ int try_to_mkdir(const char* dir_path, mode_t mode) {
         fprintf(stderr, "Directory %s exists but not accessible\n", dir_path);
         return ERROR;
     }
+
     chmod(dir_path, mode);
 
     return SUCCESS;

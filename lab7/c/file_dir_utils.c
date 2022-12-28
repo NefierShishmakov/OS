@@ -3,20 +3,22 @@
 int try_to_mkdir(const char* dir_path, mode_t mode) {
     int status = mkdir(dir_path, mode);
     
-    if (status != SUCCESS) {
-        if (errno != EEXIST) {
-            handle_dir_error("mkdir", dir_path, errno);
-            return ERROR;
-        }
-        
-        status = access(dir_path, W_OK | X_OK);
-
-        if (status != SUCCESS) {
-            fprintf(stderr, "Directory %s exists but not accessible\n", dir_path);
-            return ERROR;
-        }
-        chmod(dir_path, mode);
+    if (status == SUCCESS) {
+        return SUCCESS;
     }
+
+    if (errno != EEXIST) {
+        handle_dir_error("mkdir", dir_path, errno);
+        return ERROR;
+    }
+        
+    status = access(dir_path, W_OK | X_OK);
+
+    if (status != SUCCESS) {
+        fprintf(stderr, "Directory %s exists but not accessible\n", dir_path);
+        return ERROR;
+    }
+    chmod(dir_path, mode);
 
     return SUCCESS;
 }

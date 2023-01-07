@@ -14,11 +14,14 @@
 #include "error_handlers.h"
 #include "paths.h"
 
+#define CURRENT_DIR "."
+#define PREVIOUS_DIR ".."
+
 int handle_src_and_dest_dirs(paths_t* paths, DIR** new_srcpdir);
-int try_to_mkdir(const char* dir_path, mode_t mode);
+int try_to_create_dir(const char* dir_path, mode_t mode);
 int try_to_open_dir_with_retry(DIR** dir_stream, const char* dir_path);
 int try_to_open_file_with_retry(const char* file_path, int flags, mode_t mode);
-int try_to_write_data_to_file_with_retry(const char* buffer, ssize_t read_bytes, int dest_fd);
-bool is_wrong_element(const char* el);
+int try_to_write_data_to_file_with_retry(const char* buffer, ssize_t read_bytes_num, int dest_fd);
+bool is_previous_or_current_dir(const char* element);
 
 #endif

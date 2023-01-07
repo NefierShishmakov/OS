@@ -1,16 +1,16 @@
 #include "copy.h"
 #include "file_dir_utils.h"
 
-void set_pthread_function(void** result_function, int file_type) {
+void set_pthread_function(void** pthread_function, int file_type) {
     switch (file_type) {
         case S_IFREG:
-            *result_function = copy_file;
+            *pthread_function = copy_file;
             break;
         case S_IFDIR:
-            *result_function = copy_dir;
+            *pthread_function = copy_dir;
             break;
         default:
-            *result_function = NULL;
+            *pthread_function = NULL;
             break;
     }
 }
@@ -37,23 +37,24 @@ void* copy_file(void* arg) {
     }
 
     char buffer[BUFSIZ];
-    ssize_t read_bytes;
+    ssize_t read_bytes_num;
 
     while (true) {
-        read_bytes = read(src_fd, buffer, BUFSIZ);
+        read_bytes_num = read(src_fd, buffer, BUFSIZ);
         
-        if (read_bytes == END_OF_FILE) {
-            break;
-        }
-        if (read_bytes == ERROR) {
-            handle_file_error("read", paths->src_path, errno);
+        if (read_bytes_num == END_OF_FILE) {
             break;
         }
 
-        int status = try_to_write_data_to_file_with_retry(buffer, read_bytes, dest_fd);
+        if (read_bytes_num == ERROR) {
+            handle_file_or_dir_error("read", paths->src_path, errno);
+            break;
+        }
+
+        int status = try_to_write_data_to_file_with_retry(buffer, read_bytes_num, dest_fd);
 
         if (status == ERROR) {
-            handle_file_error("write", paths->dest_path, errno);
+            handle_file_or_dir_error("write", paths->dest_path, errno);
             break;
         }
     }
@@ -77,12 +78,12 @@ void* copy_dir(void* arg) {
 
     struct dirent* new_src_direntp;
 
-    while ((new_src_direntp = readdir(new_srcpdir)) != NULL) {
-        if (is_wrong_element(new_src_direntp->d_name)) {
+    while ((new_src_direntp = readdir(new_srcpdir)) != END_OF_CATALOG) {
+        if (is_previous_or_current_dir(new_src_direntp->d_name)) {
             continue;
         }
 
-        paths_t* new_paths = NULL;
+        paths_t* new_paths;
         status = init_paths_t(&new_paths, paths->src_path, paths->dest_path, 
                 new_src_direntp->d_name);
 
@@ -90,8 +91,8 @@ void* copy_dir(void* arg) {
             break;
         }
 
-        struct stat buf;
-        status = lstat(new_paths->src_path, &buf);
+        struct stat statbuf;
+        status = lstat(new_paths->src_path, &statbuf);
 
         if (status != SUCCESS) {
             handle_error("stat", errno);
@@ -99,20 +100,21 @@ void* copy_dir(void* arg) {
             break;
         }
 
-        set_mode(new_paths, buf.st_mode);
+        set_mode(new_paths, statbuf.st_mode);
 
-        void* result_function = NULL;
+        void* pthread_function;
+        int file_type = statbuf.st_mode & S_IFMT;
 
-        set_pthread_function(&result_function, (buf.st_mode & S_IFMT));
+        set_pthread_function(&pthread_function, file_type);
         
-        if (result_function == NULL) {
+        if (pthread_function == NULL) {
             fprintf(stdout, "\'%s\' is not a regular file or directory\n", new_paths->src_path);
             free_paths_t(new_paths);
             continue;
         }
 
         pthread_t tid;
-        status = try_to_create_thread(&tid, result_function, new_paths);
+        status = try_to_create_thread(&tid, pthread_function, new_paths);
 
         if (status != SUCCESS) {
             free_paths_t(new_paths);

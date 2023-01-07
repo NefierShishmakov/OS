@@ -1,6 +1,6 @@
 #include "file_dir_utils.h"
 
-int try_to_mkdir(const char* dir_path, mode_t mode) {
+int try_to_create_dir(const char* dir_path, mode_t mode) {
     int status = mkdir(dir_path, mode);
     
     if (status == SUCCESS) {
@@ -8,7 +8,7 @@ int try_to_mkdir(const char* dir_path, mode_t mode) {
     }
 
     if (errno != EEXIST) {
-        handle_dir_error("mkdir", dir_path, errno);
+        handle_file_or_dir_error("mkdir", dir_path, errno);
         return ERROR;
     }
         
@@ -33,7 +33,7 @@ int try_to_open_dir_with_retry(DIR** dir_stream, const char* dir_path) {
                     sleep(WAIT_SEC_FOR_FD);
                     break;
                 default:
-                    handle_dir_error("opendir", dir_path, errno);
+                    handle_file_or_dir_error("opendir", dir_path, errno);
                     return ERROR;
             }
         }
@@ -43,7 +43,7 @@ int try_to_open_dir_with_retry(DIR** dir_stream, const char* dir_path) {
 }
 
 int handle_src_and_dest_dirs(paths_t* paths, DIR** new_srcpdir) {
-    int status = try_to_mkdir(paths->dest_path, paths->mode);
+    int status = try_to_create_dir(paths->dest_path, paths->mode);
 
     if (status == ERROR) {
         return ERROR;
@@ -70,7 +70,7 @@ int try_to_open_file_with_retry(const char* file_path, int flags, mode_t mode) {
                     sleep(WAIT_SEC_FOR_FD);
                     break;
                 default:
-                    handle_file_error("open", file_path, errno);
+                    handle_file_or_dir_error("open", file_path, errno);
                     return ERROR;
             }
         }
@@ -83,24 +83,25 @@ int try_to_open_file_with_retry(const char* file_path, int flags, mode_t mode) {
     return fd;
 }
 
-int try_to_write_data_to_file_with_retry(const char* buffer, ssize_t read_bytes, int dest_fd) {    
-    ssize_t total_bytes = 0;
-    ssize_t remaining_bytes = read_bytes;
+int try_to_write_data_to_file_with_retry(const char* buffer, ssize_t read_bytes_num, int dest_fd) {    
+    ssize_t total_bytes_num = 0;
+    ssize_t remaining_bytes_num = read_bytes_num;
 
-    while (total_bytes < read_bytes) {
-        ssize_t written_bytes = write(dest_fd, &buffer[total_bytes], remaining_bytes);
+    while (total_bytes_num < read_bytes_num) {
+        ssize_t written_bytes_num = write(dest_fd, &buffer[total_bytes_num], 
+                remaining_bytes_num);
 
-        if (written_bytes == ERROR) {
+        if (written_bytes_num == ERROR) {
             return ERROR;
         }
             
-        total_bytes += written_bytes;
-        remaining_bytes -= written_bytes;
+        total_bytes_num += written_bytes_num;
+        remaining_bytes_num -= written_bytes_num;
     }
 
     return SUCCESS;
 }
 
-bool is_wrong_element(const char* el) {
-    return !(strcmp(el, CURRENT_DIR) && strcmp(el, PREVIOUS_DIR));
+bool is_previous_or_current_dir(const char* element) {
+    return !(strcmp(element, CURRENT_DIR) && strcmp(element, PREVIOUS_DIR));
 }
